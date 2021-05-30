@@ -11,12 +11,14 @@ import java.util.HashMap;
         static int index = 0; // static variable, to be sure that is unique key
         int key;
         boolean match;
-        HashMap<NodeData,EdgeData> neighbors = new HashMap<>();
 
+    public NodeData(int key){
+        this.key = key;
+        this.match = false;
+    }
     public NodeData(){
         this.key = ++index;
         this.match = false;
-        this.neighbors = new HashMap<>();
     }
 
     public int getKey(){
@@ -25,15 +27,4 @@ import java.util.HashMap;
     public boolean isMatch(){
         return match;
     }
-
-    public NodeData getMate() {
-        for(EdgeData v:neighbors.values()){
-            if(v.matched){return v.n2;}
-        }
-        return null;
     }
-
-    public Collection<NodeData> getAllNeighbors() {
-        return neighbors.keySet();
-    }
-}
