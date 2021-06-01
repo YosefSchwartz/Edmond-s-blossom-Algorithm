@@ -13,6 +13,8 @@ public class Main {
     }
 
     public static void SetAugmentingPath(Graph g, List<NodeData> path){
+        if(g.getNode(path.get(0).getKey()).getMatch() != g.getNode(path.get(path.size()-1).getKey()).getMatch())
+            return;
         for(int i=0; i<path.size()-1; i++){
             EdgeData e1 = g.getEdge(path.get(i).getKey(), path.get(i+1).getKey());
             EdgeData e2 = g.getEdge(path.get(i+1).getKey(), path.get(i).getKey());
@@ -30,13 +32,20 @@ public class Main {
 
     public static void main(String[] args) {
         Graph g = new Graph();
-        for(int i = 0; i<4;i++){
+        for(int i = 0; i<10;i++){
             g.addNode(new NodeData());
         }
+        g.addEdge(8,0);
         g.addEdge(0,1);
-        g.addEdge(0,2);
+
         g.addEdge(1,2);
-        g.addEdge(1,3);
+        g.addEdge(2,3);
+        g.addEdge(3,4);
+        g.addEdge(3,7);
+        g.addEdge(4,5);
+        g.addEdge(5,6);
+        g.addEdge(6,7);
+        g.addEdge(7,9);
 
         System.out.println(g);
 
@@ -73,9 +82,7 @@ public class Main {
                             break;
                         }
                     }
-                    else if(F.contains(w)){
-                        //TODO create the augmenting path
-                        F.remove(w);
+                    else if(F.contains(w) ){
                         T.UnzipCycles();
                         T.addNode(w);
                         T.addEdge(v.getKey(),w.getKey());
@@ -87,7 +94,9 @@ public class Main {
                             }
                             res = R_to_V;
                         }
+                        boolean before = w.getMatch();
                         SetAugmentingPath(g,res);
+                        if(w.getMatch() != before) F.remove(w);
                     }
                 }
             }
