@@ -48,6 +48,7 @@ public class Main {
 
         while(!F.isEmpty()){
             NodeData r = F.stream().findAny().get();
+            F.remove(r);
             BFS.add(r);
             T = new Graph();
             T.addNode(r);
