@@ -1,7 +1,12 @@
 public class EdgeData {
     NodeData n1, n2;
     boolean matched;
-    public EdgeData(NodeData n1,NodeData n2){
+
+    public boolean getMatched() {
+        return matched;
+    }
+
+    public EdgeData(NodeData n1, NodeData n2){
         this.n1=n1;
         this.n2=n2;
         matched=false;
