@@ -38,6 +38,8 @@ public class Main {
         g.addEdge(1,2);
         g.addEdge(1,3);
 
+        System.out.println(g);
+
         Collection<NodeData> F = new HashSet<>();
         F.addAll(g.get_all_V());
 
@@ -75,7 +77,8 @@ public class Main {
                         //TODO create the augmenting path
                         F.remove(w);
                         T.UnzipCycles();
-
+                        T.addNode(w);
+                        T.addEdge(v.getKey(),w.getKey());
                         List<NodeData> res = T.shortestPath(v.getKey(),w.getKey());
                         if(r!=v) {
                             List<NodeData> R_to_V = T.shortestPath(r.getKey(),v.getKey());
@@ -90,7 +93,7 @@ public class Main {
             }
         }
         System.out.println(g);
-        System.err.println("MATCHED!!: ");
+        System.out.println("MATCHED!!: ");
         for(List<EdgeData> e : g.edges.values()){
             for(EdgeData edge: e){
                 if(edge.getMatched()) {

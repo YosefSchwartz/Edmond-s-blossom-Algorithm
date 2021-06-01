@@ -217,7 +217,24 @@ public class Graph {
                 }
             }
         }
-        return path;
+        while(destNode.getTag()!=-1) {
+            path.add(destNode);
+            destNode=getNode(destNode.getTag());
+        }
+        // it stop when the tag is -1 (source node), so we need to add it.
+        path.add(destNode);
+
+        /*
+        we get list:
+        dest -> dest-1 ->...-> src+1 -> src
+        and we need opposite!
+         */
+        //reverse the path
+        List<NodeData> pathCorrectDirection = new ArrayList<>();
+        for(int i=path.size()-1;i>=0;i--)
+            pathCorrectDirection.add(path.get(i));
+
+        return pathCorrectDirection;
     }
 
     public Collection<NodeData> getNi(NodeData n) {
