@@ -14,6 +14,8 @@ public class Graph {
     HashMap<Integer, List<EdgeData>> edges;
     HashMap<Integer, List<NodeData>> Cycles;
     boolean flagForCycle = false;
+    LinkedList<NodeData> currPath;
+    List<LinkedList<NodeData>> allSimplePaths;
 
     int num_of_edges, num_of_nodes;
 
@@ -36,45 +38,25 @@ public class Graph {
     }
 
     public void addEdge(int n1, int n2) {
-//        for(EdgeData tmp : edges.get(n1)){
-//            if(tmp.n2.getKey() == n2);
-//            return;
-//        }
-        EdgeData e1 = new EdgeData(getNode(n1), getNode(n2));
-        EdgeData e2 = new EdgeData(getNode(n2), getNode(n1));
+        if(getEdge(n1,n2) == null){
+            EdgeData e1 = new EdgeData(getNode(n1), getNode(n2));
+            EdgeData e2 = new EdgeData(getNode(n2), getNode(n1));
 
-        edges.get(n1).add(e1);
-        edges.get(n2).add(e2);
-        num_of_edges++;
+
+            edges.get(n1).add(e1);
+            edges.get(n2).add(e2);
+            num_of_edges++;
+        }
     }
 
     public void removeEdge(int n1, int n2) {
-        EdgeData tmp = null;
-        int count = 0;
-        for (EdgeData e : edges.get(n1)) {
-            if (e.getN2().getKey() == n2) {
-                tmp = e;
-                break;
-            }
+        EdgeData e = getEdge(n1,n2);
+        if(e != null){
+            edges.get(n1).remove(e);
+            e = getEdge(n2,n1);
+            edges.get(n2).remove(e);
         }
-        if (tmp != null) {
-            edges.get(n1).remove(tmp);
-            count++;
-        }
-        tmp = null;
-        for (EdgeData e : edges.get(n2)) {
-            if (e.getN1().getKey() == n1) {
-                tmp = e;
-                break;
-            }
-        }
-        if (tmp != null) {
-            count++;
-            edges.get(n2).remove(tmp);
-        }
-        if (count == 0) {
-            num_of_edges--;
-        }
+        num_of_edges--;
     }
 
     public void removeNode(int key) {
@@ -96,13 +78,22 @@ public class Graph {
     }
 
     //zip cycle
-    public NodeData zipCycle(LinkedList<NodeData> cycle) {
-        NodeData newNode = new NodeData();
-        int key = newNode.getKey();
+    public NodeData zipCycle(NodeData newNode,LinkedList<NodeData> cycle) {
         addNode(newNode);
+
+        int key = newNode.getKey();
         for (NodeData n : cycle) {//go over all the nodes that in the cycle
             for (EdgeData e : edges.get(n.getKey())) {//go over all the edges of the current node
-                if (!cycle.contains(e.getN2())) {
+                if(n.getKey() == 10 && e.n2.getKey()==18){
+                }
+                boolean flag = false;
+                for(NodeData tmp : cycle){
+                    if(tmp.getKey() == e.getN2().getKey()){
+                        flag = true;
+                        break;
+                    }
+                }
+                if (!flag) {
                     addEdge(e.getN2().getKey(), key);//new connection between the new node and the neighbor
                     edges.get(e.getN2().getKey()).remove(getEdge(e.getN2().getKey(), e.getN1().getKey()));//remove the curr node from his neighbor's list
                 }
@@ -113,28 +104,37 @@ public class Graph {
     }
 
     public EdgeData getEdge(int key1, int key2) {
-        for (EdgeData e : edges.get(key1)) {
-            if (e.getN2().getKey() == key2)
-                return e;
+        if(!vertices.containsKey(key1) || !vertices.containsKey(key2)) {
+            return null;
+        }else{
+            for (EdgeData e : edges.get(key1)) {
+                if (e.getN2().getKey() == key2)
+                    return e;
+            }
         }
         return null;
     }
 
     public void UnzipCycles() {
-        for (int key : Cycles.keySet()) {
+        List<Integer> order = new LinkedList<>();
+        for( int k : Cycles.keySet()){
+            order.add(k);
+        }
+        for(int i = order.size()-1;i>=0;i--){
+            int key = order.get(i);
             List<NodeData> cycle = Cycles.get(key);
             for (NodeData n : cycle) {//go over all the nodes that in the cycle
                 for (EdgeData e : edges.get(n.getKey())) {//go over all the edges of the current node
                     if (!cycle.contains(e.getN2())) {
-                        removeEdge(e.getN2().getKey(), key);//remove the connection between the new node and the neighbor
-                        EdgeData tmp = new EdgeData(e.getN2(), e.getN1());
+                        removeEdge(e.getN2().getKey(), key);//(12,18) remove the connection between the new node and the neighbor
+                        EdgeData tmp = new EdgeData(e.getN2(), e.getN1());//(12,11)
                         edges.get(e.getN2().getKey()).add(tmp);
 //                    for (EdgeData e1 : edges.get(e.getN2())) { //remove the curr node from his neighbor's list
 //                        if (e1.getN2() == e.getN1())
 //                            tmp = e1;
 //                    }
-                        tmp = getEdge(e.getN2().getKey(), key);//
-                        edges.get(e.getN2().getKey()).remove(tmp);
+                        //tmp = getEdge(e.getN2().getKey(), key);
+                        //edges.get(e.getN2().getKey()).remove(tmp);
                     }
                 }
             }
@@ -142,7 +142,6 @@ public class Graph {
             removeNode(key);
         }
     }
-////*****************************************************
 
     private void resetVisit() {
         for (NodeData n : vertices.values()) {
@@ -155,15 +154,15 @@ public class Graph {
         LinkedList<NodeData> path = new LinkedList<>();
         this.resetVisit();
 
-        NodeData n = this.vertices.values().stream().findAny().get();
+        NodeData n = this.vertices.values().stream().findFirst().get();
         DFS_move(n, this, path);
 
         return path;
-
     }
 
     private void DFS_move(NodeData n, Graph g, LinkedList<NodeData> p) {
-        if (flagForCycle) return;
+        if (flagForCycle || n == null)
+            return;
 
         n.status = Status.discovered;
         if (p.contains(n)) {
@@ -221,15 +220,7 @@ public class Graph {
             path.add(destNode);
             destNode=getNode(destNode.getTag());
         }
-        // it stop when the tag is -1 (source node), so we need to add it.
         path.add(destNode);
-
-        /*
-        we get list:
-        dest -> dest-1 ->...-> src+1 -> src
-        and we need opposite!
-         */
-        //reverse the path
         List<NodeData> pathCorrectDirection = new ArrayList<>();
         for(int i=path.size()-1;i>=0;i--)
             pathCorrectDirection.add(path.get(i));
@@ -248,7 +239,7 @@ public class Graph {
     private void resetTagAndInfo() {
         for(NodeData n : vertices.values()){
             n.setInfo("");
-            n.setTag(-1);
+            n.setTag(0);
         }
     }
 
@@ -275,5 +266,36 @@ public class Graph {
                 }
                 return s;
     }
+    public LinkedList<NodeData> allPath(int src, int dest){
+        resetTagAndInfo();
+        allSimplePaths = new LinkedList<>();
+        currPath = new LinkedList<>();
+        DFS(getNode(src),getNode(dest));
+//        System.out.println(this);
+        System.out.println(allSimplePaths.size());
+        if(allSimplePaths.get(0).size() %2 == 0 || allSimplePaths.size() == 1)
+            return allSimplePaths.get(0);
 
+        return allSimplePaths.get(1);
+    }
+
+    private void DFS(NodeData src, NodeData dest) {
+        if(src.getTag() == 1){
+            return;
+        }
+        src.setTag(1);
+        currPath.add(src);
+        if(src == dest){
+            LinkedList<NodeData> path = new LinkedList<>(currPath);
+            allSimplePaths.add(path);
+            src.setTag(0);
+            currPath.removeLast();
+            return;
+        }
+        for(NodeData n : getNi(src)){
+            DFS(n,dest);
+        }
+        currPath.removeLast();
+        src.setTag(0);
+    }
 }

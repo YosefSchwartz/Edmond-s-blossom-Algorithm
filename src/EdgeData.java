@@ -22,4 +22,17 @@ public class EdgeData {
     public NodeData getN2(){
         return n2;
     }
+
+    @Override
+    public String toString() {
+        if(matched) {
+            return "{" +
+                    "(" + n1.getKey() +
+                    "," + n2.getKey() +
+                    ") matched=" + matched +
+                    '}';
+        }else{
+            return "";
+        }
+    }
 }

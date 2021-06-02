@@ -41,6 +41,10 @@ enum Status{
         this.key = index++;
         this.match = false;
     }
+        public NodeData(int key){
+            this.key = key;
+            this.match = false;
+        }
 
     public int getKey(){
         return key;
