@@ -1,8 +1,12 @@
-import org.w3c.dom.Node;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
+import java.io.File;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
 
 public class Main {
 
@@ -30,70 +34,173 @@ public class Main {
 
     }
 
+    public static NodeData zipCycle(Graph G, Graph T,LinkedList<NodeData> cycle) {
+        NodeData newNode = new NodeData();
+        T.addNode(newNode);
+
+        int key = newNode.getKey();
+        for (NodeData n : cycle) {//go over all the nodes that in the cycle
+            for (EdgeData e : T.edges.get(n.getKey())) {//go over all the edges of the current node
+                if(cycle.contains(e.getN2())){
+                    break;
+                }
+                else{
+                    T.addEdge(e.getN2().getKey(), key);//new connection between the new node and the neighbor
+                    T.edges.get(e.getN2().getKey()).remove(T.getEdge(e.getN2().getKey(), e.getN1().getKey()));//remove the curr node from his neighbor's list
+                }
+            }
+        }
+        T.Cycles.put(key, cycle);
+        G.Cycles.put(key, cycle);
+        List<EdgeData> neighborsOfTheNewCycle= new LinkedList<>();
+        for(NodeData n : cycle){
+            for(EdgeData e : G.get_all_E(n.getKey())){
+                if(!cycle.contains(e.getN2())){
+                  neighborsOfTheNewCycle.add(e);
+                }
+            }
+        }
+        G.edges.put(newNode.getKey(), neighborsOfTheNewCycle);
+        return newNode;
+    }
+
+    public static void UnzipCycles(Graph G, Graph T) {
+        List<Integer> order = new LinkedList<>();
+        for( int k : T.Cycles.keySet()){
+            order.add(k);
+        }
+
+        for(int i = order.size()-1;i>=0;i--){
+            int key = order.get(i); //Key = the index of cycle in Hashmap Cycles
+            List<NodeData> cycle = T.Cycles.get(key); //Cycle hold a one cycle on T
+            System.out.println("Unzip node "+key+" that contain the cycle "+cycle.toString());
+            System.out.println("T before unzip this cycle\n"+T);
+            NodeData CycleNode = T.getNode(key);
+            for(NodeData n : T.getNi(CycleNode)){
+                NodeData tmpNeighbor = null;
+                for (NodeData nInCyc : cycle) {
+                    if (T.getEdge(nInCyc.getKey(),n.getKey()) != null){
+                        tmpNeighbor = nInCyc;
+                    }
+                }
+                if(tmpNeighbor == null){
+//                    for(EdgeData e : G.get_all_E())
+                } else {
+                    T.addEdge(tmpNeighbor.getKey(), n.getKey());
+                    T.removeEdge(n.getKey(),CycleNode.getKey());
+                }
+            }
+            T.Cycles.remove(key);
+            T.removeNode(key);
+            System.out.println("T after unzip this cycle\n"+T);
+            G.edges.remove(key);
+        }
+        System.out.println("Preparing to the next cycle..");
+    }
+
+    public static boolean save(Graph g, String file) {
+        //Create new Json object - graph
+        JSONObject graph = new JSONObject();
+        //Declare two Json arrays
+        JSONArray edges = new JSONArray();
+        JSONArray nodes = new JSONArray();
+        try {
+            //For each node
+            for (NodeData n : g.get_all_V()) {
+                //Scan all his edges
+                for (EdgeData e : g.get_all_E(n.getKey())) {
+                    //Declare Json object - edge
+                    JSONObject edge = new JSONObject();
+                    //Insert the data to this object
+                    edge.put("src", e.getN1());
+                    edge.put("dest", e.getN2());
+                    //Insert this object to edges array
+                    edges.put(edge);
+                }
+                //Declare Json object - node
+                JSONObject node = new JSONObject();
+                //Insert the data to this object
+                node.put("id", n.getKey());
+                //Insert this object to nodes array
+                nodes.put(node);
+            }
+            //Insert this both arrays to the graph object
+            graph.put("Edges", edges);
+            graph.put("Nodes", nodes);
+
+            PrintWriter pw = new PrintWriter(new File(file));
+            pw.write(graph.toString());
+            pw.close();
+            return true;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+
+    public static boolean load(Graph g, String file) {
+        try {
+            //JSONObject that represent the graph from JSON file
+            JSONObject graph = new JSONObject(new String(Files.readAllBytes(Paths.get(file))));
+
+            //Two JSONArray that represents the Edges and Nodes
+            JSONArray edges = graph.getJSONArray("Edges");
+            JSONArray nodes = graph.getJSONArray("Nodes");
+
+            //Declare of the new graph
+//            g = new Graph();
+            //For each Node, get the data ,make new node and add him to the graph
+            for (int i = 0; i < nodes.length(); i++) {
+                JSONObject nJSON = nodes.getJSONObject(i);
+                //Build node that contain the id an pos
+                NodeData n = new NodeData(nJSON.getInt("id"));
+                //Add this node to the graph
+                g.addNode(n);
+            }
+            //For each edge, get the data and connect two vertex by the data
+            for (int i = 0; i < edges.length(); i++) {
+                JSONObject edge = edges.getJSONObject(i);
+                int src = edge.getInt("src");
+                int dest = edge.getInt("dest");
+                g.addEdge(src, dest);
+            }
+            return true;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 
     public static void main(String[] args) throws InterruptedException {
         Graph g = new Graph();
-        for (int i = 0; i < 18; i++) {
-            g.addNode(new NodeData());
-        }
-        g.addEdge(0, 1);
-        g.addEdge(0, 7);
-
-        g.addEdge(1, 4);
-
-        g.addEdge(2, 3);
-        g.addEdge(2, 5);
-        g.addEdge(2, 6);
-
-        g.addEdge(3, 6);
-
-        g.addEdge(4, 7);
-        g.addEdge(4, 8);
-
-        g.addEdge(5, 6);
-        g.addEdge(5, 12);
-        g.addEdge(5, 13);
-
-        g.addEdge(6, 13);
-
-        g.addEdge(7, 8);
-        g.addEdge(7, 10);
-
-        g.addEdge(8, 9);
-        g.addEdge(8, 10);
-
-        g.addEdge(9, 12);
-        g.addEdge(9, 13);
-
-        g.addEdge(10, 11);
-
-        g.addEdge(11, 12);
-        g.addEdge(11, 14);
-        g.addEdge(11, 15);
-
-        g.addEdge(12, 13);
-        g.addEdge(12, 16);
-        g.addEdge(12, 17);
-
-        g.addEdge(13, 16);
-        g.addEdge(13, 17);
-
-        g.addEdge(14, 15);
-
-        g.addEdge(15, 16);
-
-        g.addEdge(16, 17);
+        load(g,"./Graphs/House of cards.json");
 
 
         System.out.println(g);
-//
-//        System.out.println(g.getNode(7));
-//        System.out.println(g.getNode(11));
-//        System.out.println(g.allPath(7,11));
 
-        Collection<NodeData> F = new HashSet<>();
+//        save("./Graphs/Triangle.json");
+
+
+        List<NodeData> F = new LinkedList<>();
         F.addAll(g.get_all_V());
-
+        Comparator<NodeData> cmp = new Comparator<NodeData>() {
+            @Override
+            public int compare(NodeData o1, NodeData o2) {
+                if(o1.getKey()>o2.getKey()) {
+                    return 1;
+                }
+                else if (o1.getKey() < o2.getKey()){
+                    return -1;
+                }else
+                    return 0;
+            }
+        };
+        F.sort(cmp);
         Graph T;
 
         Queue<NodeData> BFS = new LinkedList<>();
@@ -101,67 +208,92 @@ public class Main {
 
         while(!F.isEmpty()){
             NodeData r = F.stream().findFirst().get();
+            System.out.println("R = "+r.getKey());
             F.remove(r);
             BFS.add(r);
             T = new Graph();
             T.addNode(r);
             while(!BFS.isEmpty()){
                 NodeData vOriginal = BFS.poll();
-                NodeData v = g.getConvertNode(vOriginal);
-
+                NodeData v = T.getConvertNode(vOriginal);
+                System.out.println(
+                                "V="+v.getKey()+
+                                "\nvOriginal="+vOriginal.getKey());
                 for(NodeData w : g.getNi(v)){
-                    System.out.println(
-                            "\nr="+r.getKey()+
-                                    "\nv="+v.getKey()+
-                                    "\nw="+w.getKey()+
-                                    "\nvOriginal="+vOriginal.getKey()+
-                                    "\nEDGES IN G -"+g.edges.values().toString());
+                    System.out.println("W="+w.getKey());
+                    System.out.println("Check what going on with w");
                     if(!T.get_all_V().contains(w) && w.getMatch()){
                         T.addNode(w);
                         NodeData mate = getMate(g, w);
+                        System.out.println("w isn't in T, and w=("+w.getKey()+") is matched to mate=("+mate.getKey()+")");
+                        System.out.println("Adding w to T");
                         T.addNode(mate);
+                        System.out.println("Adding mate to T");
+                        if(vOriginal != v) {
+                            System.out.println("vOriginal different than v");
+                            T.addEdge(vOriginal.getKey(), w.getKey());
+                            T.edges.get(w.getKey()).remove(T.getEdge(w.getKey(), vOriginal.getKey()));
+                            System.out.println("Connecting vOriginal to w and delete the edge from w to vOriginal" +
+                                    "\n(w know just the cyc!");
+                        }
                         T.addEdge(v.getKey(),w.getKey());
+                        System.out.println("Connect v to w");
                         T.addEdge(w.getKey(),mate.getKey());
+                        System.out.println("Connect w to mate");
+
+
                         BFS.add(mate);
+                        System.out.println("Add mate to BFS queue");
                     } else if(T.get_all_V().contains(w) && (T.getEdge(v.getKey(), w.getKey()) == null)){
+                        if(vOriginal != v) {
+                            System.out.println("vOriginal different than v");
+                            T.addEdge(vOriginal.getKey(), w.getKey());
+                            T.edges.get(w.getKey()).remove(T.getEdge(w.getKey(), vOriginal.getKey()));
+                            System.out.println("Connecting vOriginal to w and delete the edge from w to vOriginal" +
+                                    "\n(w know just the cyc!");
+                        }
                         T.addEdge(v.getKey(),w.getKey());
+                        System.out.println("Connect v to w");
 
+                        System.out.println("T before \n"+T);
                         LinkedList<NodeData> cyc = T.checkCycle();
+                        System.out.println("Get the cycle: " + cyc.toString());
                         if(cyc.size() % 2 == 1 && cyc.size()>1){
-                            NodeData newNode = new NodeData();
-                            NodeData newNode2 = new NodeData(newNode.getKey());
+                            System.out.println("The cycle is odd!");
+                            System.out.println("Get zip the cycle");
+                            zipCycle(g,T,cyc);
 
-                            T.zipCycle(newNode,cyc);
-                            g.zipCycle(newNode2,cyc);
-                            //remove the previous nodes from the queue
-//                            int size = BFS.size();
-//                            NodeData tmp;
-//                            for(int i = 0; i<size;i++) {
-//                                tmp = BFS.poll();
-//                                if(!cyc.contains(tmp)){
-//                                    BFS.add(tmp);
-//                                }
-//                            }
-                            //BFS.add(newNode);
+                            System.out.println("T after zip\n"+T);
                             break;
                         }else{
                            T.removeEdge(v.getKey(),w.getKey());
+                            System.out.println("the cycle is even, will remove (v,w)");
+                            System.out.println("T after \n"+T);
+                            if(vOriginal != v) {
+                                System.out.println("vOriginal different than v");
+                                T.edges.get(w.getKey()).remove(T.getEdge(vOriginal.getKey(),w.getKey()));
+                                System.out.println("remove vOriginal to w");
+                            }
                         }
                     } else if(F.contains(w) ){
-
+                        System.out.println("w is in F!");
                         T.addNode(w);
-                        System.out.println("V="+v.getKey()+" W="+w.getKey());
+                        System.out.println("Add w to T");
                         System.out.println(T.get_all_V().toString());
-//                        T.addEdge(v.getKey(),w.getKey());
-                        T.addEdge(vOriginal.getKey(),w.getKey());
-//                        System.out.println("T before :\n"+T);
-//                        System.out.println("T after:\n" + T);
-
-                        T.UnzipCycles();
-                        g.UnzipCycles();
-                        if(r.getKey() == 14 && w.getKey() == 2){
-                            System.out.println("");
+                        if(vOriginal != v) {
+                            System.out.println("vOriginal different than v");
+                            T.addEdge(vOriginal.getKey(), w.getKey());
+                            T.edges.get(w.getKey()).remove(T.getEdge(w.getKey(), vOriginal.getKey()));
+                            System.out.println("Connecting vOriginal to w and delete the edge from w to vOriginal" +
+                                    "\n(w know just the cyc!");
                         }
+                        T.addEdge(v.getKey(),w.getKey());
+                        System.out.println("Connect v to w");
+
+                        System.out.println("Unzip the cycles!");
+                        UnzipCycles(g,T);
+                        System.out.println("T after remove all cycles \n"+T );
+
                         LinkedList<NodeData> res = T.allPath(r.getKey(),w.getKey());
                         System.out.println("The path is" + res.toString());
                         boolean before = w.getMatch();
@@ -178,65 +310,12 @@ public class Main {
         System.out.println(g);
         System.out.println("MATCHED!!: ");
         for(List<EdgeData> e : g.edges.values()){
-            for(EdgeData edge: e){
-                if(edge.getMatched()) {
+            for (EdgeData edge : e) {
+                if (edge.getMatched()) {
                     if (edge.getN1().getKey() < edge.getN2().getKey())
-                        System.out.println("("+edge.getN1().getKey()+","+edge.getN2().getKey()+")");
+                        System.out.println("(" + edge.getN1().getKey() + "," + edge.getN2().getKey() + ")");
                 }
             }
-
         }
     }
-        //*********************************************
-//
-//    private static Set<NodeData> ExtractNi(Set<NodeData> ni, Graph g, Graph t, NodeData v) {
-//        if(!g.get_all_V().contains(v)){
-//            for(NodeData tmp: t.Cycles.get(v.getKey())){
-//                if(!g.get_all_V().contains(tmp)){
-//                    ni = ExtractNi(ni,g,t,tmp);
-//                }
-//                ni.addAll(g.getNi(tmp));
-//            }
-//        } else {
-//            ni = (Set) g.getNi(v);
-//        }
-//        return ni;
-//    }
-
-//
-//
-//
-//        Graph g = new Graph();
-//        for (int i = 1; i <= 13; ++i) {
-//            NodeData n = new NodeData();
-//            g.addNode(n);
-//        }
-//
-//        g.addEdge(1, 2);
-//        g.addEdge(2, 3);
-//        g.addEdge(3, 4);
-//        g.addEdge(3, 8);
-//        g.addEdge(4, 12);
-//        g.addEdge(4, 5);
-//        g.addEdge(5, 6);
-//        g.addEdge(6, 7);
-//        g.addEdge(6, 10);
-//        g.addEdge(7, 8);
-////        g.addEdge(9,11);
-//        g.addEdge(8, 9);
-//        g.addEdge(10, 11);
-//        g.addEdge(12, 13);
-//
-//        LinkedList<NodeData> res = g.checkCycle();
-//        System.out.println(res.toString() + "\n\n");
-//
-//        System.out.println(g);
-//        g.zipCycle(res);
-//
-//        System.out.println(g);
-//
-//        g.UnzipCycle(14);
-//
-//        System.out.println(g);
-
 }

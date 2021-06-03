@@ -1,7 +1,13 @@
 
 import org.w3c.dom.Node;
 
+import java.io.File;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * Graph class implements graph interface, that displays a undirectional unweighted graph.
@@ -103,6 +109,8 @@ public class Graph {
         return newNode;
     }
 
+
+
     public EdgeData getEdge(int key1, int key2) {
         if(!vertices.containsKey(key1) || !vertices.containsKey(key2)) {
             return null;
@@ -184,50 +192,6 @@ public class Graph {
         }
     }
 
-    public List<NodeData> shortestPath(int src, int dest) {
-        resetTagAndInfo();
-
-        List<NodeData> path = new ArrayList<>();
-        if (src == dest)
-            return path; // case that the path is from node to himself (no edge)
-
-        NodeData srcNode = vertices.get(src);
-        NodeData destNode = vertices.get(dest);
-
-        final String beHere = "we have been here!";
-        LinkedList<NodeData> queue = new LinkedList<>();
-        queue.add(srcNode);
-        srcNode.setInfo(beHere);
-        srcNode.tag = -1;
-
-        boolean flag = false;
-
-        while (!queue.isEmpty() && !flag) {
-            NodeData tmp = queue.remove();
-            for (NodeData tmpNi : getNi(tmp)) {
-                if (tmpNi.getInfo() != beHere) {
-                    tmpNi.setInfo(beHere);
-                    tmpNi.setTag(tmp.getKey());
-                    queue.add(tmpNi);
-                }
-                if (tmpNi == destNode) {
-                    flag = true;
-                    break;
-                }
-            }
-        }
-        while(destNode.getTag()!=-1) {
-            path.add(destNode);
-            destNode=getNode(destNode.getTag());
-        }
-        path.add(destNode);
-        List<NodeData> pathCorrectDirection = new ArrayList<>();
-        for(int i=path.size()-1;i>=0;i--)
-            pathCorrectDirection.add(path.get(i));
-
-        return pathCorrectDirection;
-    }
-
     public Collection<NodeData> getNi(NodeData n) {
         Collection<NodeData> res = new HashSet<>();
         for (EdgeData e : this.get_all_E(n.getKey())) {
@@ -272,7 +236,8 @@ public class Graph {
         currPath = new LinkedList<>();
         DFS(getNode(src),getNode(dest));
 //        System.out.println(this);
-        System.out.println(allSimplePaths.size());
+        System.out.println("Count of path: "+allSimplePaths.size());
+        System.out.println(allSimplePaths.toString());
         if(allSimplePaths.get(0).size() %2 == 0 || allSimplePaths.size() == 1)
             return allSimplePaths.get(0);
 
