@@ -1,6 +1,7 @@
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.PrintWriter;
 import java.nio.file.Files;
@@ -10,15 +11,15 @@ import java.util.*;
 
 public class Main {
 
-    private static NodeData getMate(Graph g, NodeData n2) {
+    private static NodeData getMate(Undiricted_Graph g, NodeData n2) {
         for (EdgeData e : g.get_all_E(n2.getKey())) {
             if (e.matched)
-                return e.getN2();
+                return e.getDest();
         }
         return null;
     }
 
-    public static void SetAugmentingPath(Graph g, List<NodeData> path) {
+    public static void SetAugmentingPath(Undiricted_Graph g, List<NodeData> path) {
         if (g.getNode(path.get(0).getKey()).getMatch() != g.getNode(path.get(path.size() - 1).getKey()).getMatch())
             return;
         for (int i = 0; i < path.size() - 1; i++) {
@@ -34,19 +35,19 @@ public class Main {
 
     }
 
-    public static NodeData zipCycle(Graph G, Graph T,LinkedList<NodeData> cycle) {
+    public static NodeData zipCycle(Undiricted_Graph G, Undiricted_Graph T, LinkedList<NodeData> cycle) {
         NodeData newNode = new NodeData();
         T.addNode(newNode);
 
         int key = newNode.getKey();
         for (NodeData n : cycle) {//go over all the nodes that in the cycle
             for (EdgeData e : T.edges.get(n.getKey())) {//go over all the edges of the current node
-                if(cycle.contains(e.getN2())){
+                if(cycle.contains(e.getDest())){
                     break;
                 }
                 else{
-                    T.addEdge(e.getN2().getKey(), key);//new connection between the new node and the neighbor
-                    T.edges.get(e.getN2().getKey()).remove(T.getEdge(e.getN2().getKey(), e.getN1().getKey()));//remove the curr node from his neighbor's list
+                    T.addEdge(e.getDest().getKey(), key);//new connection between the new node and the neighbor
+                    T.edges.get(e.getDest().getKey()).remove(T.getEdge(e.getDest().getKey(), e.getSrc().getKey()));//remove the curr node from his neighbor's list
                 }
             }
         }
@@ -55,7 +56,7 @@ public class Main {
         List<EdgeData> neighborsOfTheNewCycle= new LinkedList<>();
         for(NodeData n : cycle){
             for(EdgeData e : G.get_all_E(n.getKey())){
-                if(!cycle.contains(e.getN2())){
+                if(!cycle.contains(e.getDest())){
                   neighborsOfTheNewCycle.add(e);
                 }
             }
@@ -64,7 +65,7 @@ public class Main {
         return newNode;
     }
 
-    public static void UnzipCycles(Graph G, Graph T) {
+    public static void UnzipCycles(Undiricted_Graph G, Undiricted_Graph T) {
         List<Integer> order = new LinkedList<>();
         for( int k : T.Cycles.keySet()){
             order.add(k);
@@ -98,7 +99,7 @@ public class Main {
         System.out.println("Preparing to the next cycle..");
     }
 
-    public static boolean save(Graph g, String file) {
+    public static boolean save(Undiricted_Graph g, String file) {
         //Create new Json object - graph
         JSONObject graph = new JSONObject();
         //Declare two Json arrays
@@ -112,8 +113,8 @@ public class Main {
                     //Declare Json object - edge
                     JSONObject edge = new JSONObject();
                     //Insert the data to this object
-                    edge.put("src", e.getN1());
-                    edge.put("dest", e.getN2());
+                    edge.put("src", e.getSrc());
+                    edge.put("dest", e.getDest());
                     //Insert this object to edges array
                     edges.put(edge);
                 }
@@ -141,7 +142,7 @@ public class Main {
 
 
 
-    public static boolean load(Graph g, String file) {
+    public static boolean load(Undiricted_Graph g, String file) {
         try {
             //JSONObject that represent the graph from JSON file
             JSONObject graph = new JSONObject(new String(Files.readAllBytes(Paths.get(file))));
@@ -175,9 +176,50 @@ public class Main {
         }
     }
 
+//    public static void MinimumEdgeCover(Undirected_Graph g, JFrame f) throws InterruptedException {
+//        Hungarian_m(g, f);
+//        LinkedList<NodeData> unMatched =g.getUnMatchedNodes();
+//        for(NodeData n: unMatched){
+//            for(NodeData nei: g.getNi(n)){
+//                if(nei.getMatch()){
+//                    g.getEdge(n.getKey(), nei.getKey()).setEdgeCover(true);
+//                    g.getEdge(nei.getKey(), n.getKey()).setEdgeCover(true);
+//                    f.repaint();
+//                    Thread.sleep(500);
+//                    System.out.println();
+//                    break;
+//                }
+//            }
+//        }
+//    }
+
+//    public static void TestEdgeCover(Undirected_Graph g) throws InterruptedException {
+//        JFrame f =new JFrame();
+//        f.setSize(1100,600);
+//        GUI gui=new GUI(g);
+//        gui.setEdgeCover(true);
+//        f.add(gui);
+//        f.setVisible(true);
+//        f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+//
+//        Thread.sleep(1500);
+//        Hungarian_m(g,f);
+//        MinimumEdgeCover(g,f);
+//        g.clearUnCovered();
+//        f.repaint();
+//        LinkedList<edgeData> Edge_cover =new LinkedList<>();
+//        Edge_cover.addAll(g.getAllEdgesCover());
+//        Edge_cover.addAll(g.getAllMatchedEdges());
+//        System.out.println("Edges in Edge cover:\n"+ Edge_cover.toString());
+//    }
+
+
+    public void EdmondBlossom(Undiricted_Graph g, JFrame f){
+
+    }
 
     public static void main(String[] args) throws InterruptedException {
-        Graph g = new Graph();
+        Undiricted_Graph g = new Undiricted_Graph();
         load(g,"./Graphs/House of cards.json");
 
 
@@ -186,22 +228,12 @@ public class Main {
 //        save("./Graphs/Triangle.json");
 
 
-        List<NodeData> F = new LinkedList<>();
+        LinkedList<NodeData> F = new LinkedList<>();
         F.addAll(g.get_all_V());
-        Comparator<NodeData> cmp = new Comparator<NodeData>() {
-            @Override
-            public int compare(NodeData o1, NodeData o2) {
-                if(o1.getKey()>o2.getKey()) {
-                    return 1;
-                }
-                else if (o1.getKey() < o2.getKey()){
-                    return -1;
-                }else
-                    return 0;
-            }
-        };
-        F.sort(cmp);
-        Graph T;
+
+        Collections.sort(F);
+
+        Undiricted_Graph T;
 
         Queue<NodeData> BFS = new LinkedList<>();
 
@@ -211,7 +243,7 @@ public class Main {
             System.out.println("R = "+r.getKey());
             F.remove(r);
             BFS.add(r);
-            T = new Graph();
+            T = new Undiricted_Graph();
             T.addNode(r);
             while(!BFS.isEmpty()){
                 NodeData vOriginal = BFS.poll();
@@ -312,8 +344,8 @@ public class Main {
         for(List<EdgeData> e : g.edges.values()){
             for (EdgeData edge : e) {
                 if (edge.getMatched()) {
-                    if (edge.getN1().getKey() < edge.getN2().getKey())
-                        System.out.println("(" + edge.getN1().getKey() + "," + edge.getN2().getKey() + ")");
+                    if (edge.getSrc().getKey() < edge.getDest().getKey())
+                        System.out.println("(" + edge.getSrc().getKey() + "," + edge.getDest().getKey() + ")");
                 }
             }
         }

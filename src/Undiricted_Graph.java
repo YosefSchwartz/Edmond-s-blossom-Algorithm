@@ -1,13 +1,4 @@
-
-import org.w3c.dom.Node;
-
-import java.io.File;
-import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 /**
  * Graph class implements graph interface, that displays a undirectional unweighted graph.
@@ -15,7 +6,7 @@ import org.json.JSONObject;
  * In addition contains the total actions performed, and the number of edges.
  */
 
-public class Graph {
+public class Undiricted_Graph {
     HashMap<Integer, NodeData> vertices;
     HashMap<Integer, List<EdgeData>> edges;
     HashMap<Integer, List<NodeData>> Cycles;
@@ -25,7 +16,7 @@ public class Graph {
 
     int num_of_edges, num_of_nodes;
 
-    public Graph() {
+    public Undiricted_Graph() {
         vertices = new HashMap<>();
         edges = new HashMap<>();
         Cycles = new HashMap<>();
@@ -168,7 +159,7 @@ public class Graph {
         return path;
     }
 
-    private void DFS_move(NodeData n, Graph g, LinkedList<NodeData> p) {
+    private void DFS_move(NodeData n, Undiricted_Graph g, LinkedList<NodeData> p) {
         if (flagForCycle || n == null)
             return;
 

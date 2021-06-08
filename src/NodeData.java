@@ -9,7 +9,8 @@ enum Status{
     discovered,
     finished
 }
-    public class NodeData {
+    public class NodeData implements  Comparable<Object> {
+
         static int index = 0; // static variable, to be sure that is unique key
         int key;
         boolean match;
@@ -33,34 +34,37 @@ enum Status{
             this.info = info;
         }
 
-        //    public NodeData(int key){
-//        this.key = key;
-//        this.match = false;
-//    }
-    public NodeData(){
-        this.key = index++;
-        this.match = false;
-    }
+        public NodeData(){
+            this.key = index++;
+            this.match = false;
+        }
         public NodeData(int key){
             this.key = key;
             this.match = false;
         }
 
-    public int getKey(){
+        public int getKey(){
         return key;
     }
 
-    public boolean getMatch(){
+        public boolean getMatch(){
         return match;
     }
+
+        public void setMatch(boolean match) {
+            this.match = match;
+        }
+
+        @Override
+        public int compareTo(Object o) {
+            NodeData n =(NodeData)(o);
+            if(key-n.getKey()>0) return 1;
+            return -1;
+        }
 
         @Override
         public String toString() {
             return ""+key;
 
-        }
-
-        public void setMatch(boolean match) {
-            this.match = match;
         }
     }
