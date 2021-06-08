@@ -1,11 +1,14 @@
 public class EdgeData {
-    NodeData src, dest;
-    boolean matched;
+    private NodeData src, dest;
+    private boolean matched;
+    private boolean inEdgeCover;
+
 
     public EdgeData(NodeData src, NodeData dest){
         this.src=src;
         this.dest=dest;
         matched=false;
+        inEdgeCover=false;
     }
 
     public boolean getMatched() {
@@ -14,6 +17,15 @@ public class EdgeData {
     public void setMatched(boolean matched) {
         this.matched = matched;
     }
+
+    public boolean getEdgeCover(){
+        return inEdgeCover;
+    }
+
+    public void setEdgeCover(boolean b){
+        inEdgeCover=b;
+    }
+
 
     public NodeData getSrc() {
         return src;
@@ -25,14 +37,6 @@ public class EdgeData {
 
     @Override
     public String toString() {
-        if(matched) {
-            return "{" +
-                    "(" + src.getKey() +
-                    "," + dest.getKey() +
-                    ") matched=" + matched +
-                    '}';
-        }else{
-            return "";
-        }
+            return "(" + src.getKey() +"," + dest.getKey() +")";
     }
 }

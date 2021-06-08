@@ -17,6 +17,26 @@ enum Status{
         Status status;
         int tag;
         String info;
+        Point p;
+
+        public NodeData(){
+            this.key = index++;
+            this.match = false;
+            p=new Point();
+        }
+        public NodeData(int key){
+            this.key = key;
+            this.match = false;
+            p=new Point();
+        }
+
+        public Point getP(){
+            return p;
+        }
+        public void setP(int x, int y){
+            p.setX(x);
+            p.setY(y);
+        }
 
         public int getTag() {
             return tag;
@@ -32,15 +52,6 @@ enum Status{
 
         public void setInfo(String info) {
             this.info = info;
-        }
-
-        public NodeData(){
-            this.key = index++;
-            this.match = false;
-        }
-        public NodeData(int key){
-            this.key = key;
-            this.match = false;
         }
 
         public int getKey(){

@@ -1,7 +1,6 @@
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import javax.swing.*;
 import java.io.File;
 import java.io.PrintWriter;
 import java.nio.file.Files;
@@ -11,15 +10,15 @@ import java.util.*;
 
 public class Main {
 
-    private static NodeData getMate(Undiricted_Graph g, NodeData n2) {
+    private static NodeData getMate(Undirected_Graph g, NodeData n2) {
         for (EdgeData e : g.get_all_E(n2.getKey())) {
-            if (e.matched)
+            if (e.getMatched())
                 return e.getDest();
         }
         return null;
     }
 
-    public static void SetAugmentingPath(Undiricted_Graph g, List<NodeData> path) {
+    public static void SetAugmentingPath(Undirected_Graph g, List<NodeData> path) {
         if (g.getNode(path.get(0).getKey()).getMatch() != g.getNode(path.get(path.size() - 1).getKey()).getMatch())
             return;
         for (int i = 0; i < path.size() - 1; i++) {
@@ -35,7 +34,7 @@ public class Main {
 
     }
 
-    public static NodeData zipCycle(Undiricted_Graph G, Undiricted_Graph T, LinkedList<NodeData> cycle) {
+    public static NodeData zipCycle(Undirected_Graph G, Undirected_Graph T, LinkedList<NodeData> cycle) {
         NodeData newNode = new NodeData();
         T.addNode(newNode);
 
@@ -65,7 +64,7 @@ public class Main {
         return newNode;
     }
 
-    public static void UnzipCycles(Undiricted_Graph G, Undiricted_Graph T) {
+    public static void UnzipCycles(Undirected_Graph G, Undirected_Graph T) {
         List<Integer> order = new LinkedList<>();
         for( int k : T.Cycles.keySet()){
             order.add(k);
@@ -99,7 +98,7 @@ public class Main {
         System.out.println("Preparing to the next cycle..");
     }
 
-    public static boolean save(Undiricted_Graph g, String file) {
+    public static boolean save(Undirected_Graph g, String file) {
         //Create new Json object - graph
         JSONObject graph = new JSONObject();
         //Declare two Json arrays
@@ -141,8 +140,7 @@ public class Main {
     }
 
 
-
-    public static boolean load(Undiricted_Graph g, String file) {
+    public static boolean load(Undirected_Graph g, String file) {
         try {
             //JSONObject that represent the graph from JSON file
             JSONObject graph = new JSONObject(new String(Files.readAllBytes(Paths.get(file))));
@@ -214,12 +212,10 @@ public class Main {
 //    }
 
 
-    public void EdmondBlossom(Undiricted_Graph g, JFrame f){
 
-    }
 
     public static void main(String[] args) throws InterruptedException {
-        Undiricted_Graph g = new Undiricted_Graph();
+        Undirected_Graph g = new Undirected_Graph();
         load(g,"./Graphs/House of cards.json");
 
 
@@ -233,7 +229,7 @@ public class Main {
 
         Collections.sort(F);
 
-        Undiricted_Graph T;
+        Undirected_Graph T;
 
         Queue<NodeData> BFS = new LinkedList<>();
 
@@ -243,7 +239,7 @@ public class Main {
             System.out.println("R = "+r.getKey());
             F.remove(r);
             BFS.add(r);
-            T = new Undiricted_Graph();
+            T = new Undirected_Graph();
             T.addNode(r);
             while(!BFS.isEmpty()){
                 NodeData vOriginal = BFS.poll();
