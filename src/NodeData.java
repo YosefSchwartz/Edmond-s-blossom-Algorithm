@@ -25,6 +25,7 @@ enum Status{
             p=new Point();
         }
         public NodeData(int key){
+            index=key+1;
             this.key = key;
             this.match = false;
             p=new Point();

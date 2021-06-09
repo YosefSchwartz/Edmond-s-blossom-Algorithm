@@ -36,7 +36,6 @@ public class GUI extends JPanel {
     @Override
     public void paint(Graphics g) {
         super.paintComponent(g);
-        System.out.println("w= "+this.getWidth()+", h= "+this.getHeight());
 
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(
@@ -51,6 +50,7 @@ public class GUI extends JPanel {
 //        g2d.drawOval(a - r, b - r, 2 * r, 2 * r);
 
         g2d.setStroke(new BasicStroke(2));
+
         if(flag){
             drawEdges(g2d);
             drawNodesWithLocations(g2d);
@@ -72,7 +72,6 @@ public class GUI extends JPanel {
                 g2d.drawLine(x1, y1, x2, y2);
             }
         }
-
     }
     private void drawNodesWithLocations(Graphics2D g2d) {
         for(NodeData node: graph.get_all_V()){
@@ -95,7 +94,6 @@ public class GUI extends JPanel {
             double t = 2 * Math.PI * i / n;
             int x = (int) Math.round(a + r * Math.cos(t));
             int y = (int) Math.round(b + r * Math.sin(t));
-            System.out.println("2 * r2= "+2 * r2);
             g2d.fillOval(x - r2, y - r2, 2 * r2, 2 * r2);
             g2d.setColor(Color.BLACK);
             int px, py;

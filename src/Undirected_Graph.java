@@ -74,31 +74,24 @@ public class Undirected_Graph {
         return edges.get(key);
     }
 
-    //zip cycle
-//    public NodeData zipCycle(NodeData newNode,LinkedList<NodeData> cycle) {
-//        addNode(newNode);
-//        int key = newNode.getKey();
-//        for (NodeData n : cycle) {//go over all the nodes that in the cycle
-//            for (EdgeData e : edges.get(n.getKey())) {//go over all the edges of the current node
-//                boolean flag = false;
-//                for(NodeData tmp : cycle){
-//                    if(tmp.getKey() == e.getDest().getKey()){
-//                        flag = true;
-//                        break;
-//                    }
-//                }
-//                if (!flag) {
-//                    addEdge(e.getDest().getKey(), key);//new connection between the new node and the neighbor
-//                    edges.get(e.getDest().getKey()).remove(getEdge(e.getDest().getKey(), e.getSrc().getKey()));//remove the curr node from his neighbor's list
-//                }
-//            }
-//        }
-//        Cycles.put(key, cycle);
-//        return newNode;
-//    }
+    public void setPointForSuperNode(NodeData newNode,LinkedList<NodeData> cycle){
+        NodeData first_in_cyc=cycle.get(0);
+        for(NodeData n: cycle){
+            if(n.getKey()!=first_in_cyc.getKey()) {
+                if (getEdge(first_in_cyc.getKey(), n.getKey())!=null){
+                    Point p1 = first_in_cyc.getP();
+                    Point p2 = first_in_cyc.getP();
+                    int x= (p1.getX()+p2.getX())/2;
+                    int y= (p1.getY()+p2.getY())/2;
+                    newNode.setP(x,y);
+                }
+            }
+        }
+    }
 
     public NodeData zipCycle(NodeData newNode,LinkedList<NodeData> cycle) {
         addNode(newNode);
+        setPointForSuperNode(newNode,cycle);
         int key = newNode.getKey();
         for (NodeData node_in_cyc : cycle) {//go over all the nodes that in the cycle
             for(EdgeData e: get_all_E(node_in_cyc.getKey())){
