@@ -250,9 +250,6 @@ public class Undirected_Graph {
             currPath.removeLast();
             return;
         }
-        //TODO - HERE WE CAN SEE THIS NULL IN Triangles and squares.JSON
-        System.out.println(src.getKey());
-        System.out.println(get_all_E(src.getKey()));
         for(NodeData n : getNi(src)){
             DFS(n,dest);
         }
