@@ -35,8 +35,8 @@ public class Undirected_Graph {
     }
 
     public void addEdge(int n1, int n2) {
-        System.out.println("n1= "+n1+", n2= "+n2);
-        System.out.println(this);
+//        System.out.println("n1= "+n1+", n2= "+n2);
+//        System.out.println(this);
         if(getEdge(n1,n2) == null){
             EdgeData e1 = new EdgeData(getNode(n1), getNode(n2));
             EdgeData e2 = new EdgeData(getNode(n2), getNode(n1));
@@ -257,6 +257,9 @@ public class Undirected_Graph {
             currPath.removeLast();
             return;
         }
+        //TODO - HERE WE CAN SEE THIS NULL IN Triangles and squares.JSON
+        System.out.println(src.getKey());
+        System.out.println(get_all_E(src.getKey()));
         for(NodeData n : getNi(src)){
             DFS(n,dest);
         }

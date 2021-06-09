@@ -158,6 +158,7 @@ public class Algorithms {
                         T.addEdge(v.getKey(), nei.getKey());
                         g.UnzipCycles();
                         T.UnzipCycles();
+                        System.out.println("ROOT: "+root.getKey()+ "NEI"+ nei.getKey());
                         SetAugmentingPath(g, T.allPath(root.getKey(), nei.getKey()));
                         F.remove(nei);
                         q.clear();
@@ -195,8 +196,9 @@ public class Algorithms {
 
     public static void main(String[] args) {
        Undirected_Graph g=new Undirected_Graph();
-       load(g, "Graphs/Large house of cards.json");
-       EdmondBlossom(g);
+       load(g, "Graphs/Triangles and squares.json");
+//        System.out.println(g);
+        EdmondBlossom(g);
         System.out.println("Nodes: \n"+g.getAllMatchedNodes().toString());
         System.out.println("Edges: \n"+g.getAllMatchedEdges().toString());
 
