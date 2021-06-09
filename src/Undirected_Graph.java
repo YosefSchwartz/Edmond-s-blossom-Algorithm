@@ -35,8 +35,6 @@ public class Undirected_Graph {
     }
 
     public void addEdge(int n1, int n2) {
-//        System.out.println("n1= "+n1+", n2= "+n2);
-//        System.out.println(this);
         if(getEdge(n1,n2) == null){
             EdgeData e1 = new EdgeData(getNode(n1), getNode(n2));
             EdgeData e2 = new EdgeData(getNode(n2), getNode(n1));
@@ -90,6 +88,9 @@ public class Undirected_Graph {
     }
 
     public NodeData zipCycle(NodeData newNode,LinkedList<NodeData> cycle) {
+//        System.out.println("zip cyc-> "+cycle.toString()+"\nthe superNode is "+newNode.getKey());
+//        System.out.println("before Zip");
+//        System.out.println(this);
         addNode(newNode);
         setPointForSuperNode(newNode,cycle);
         int key = newNode.getKey();
@@ -102,6 +103,8 @@ public class Undirected_Graph {
             }
         }
         Cycles.put(newNode.getKey(), cycle);
+//        System.out.println("after Zip");
+//        System.out.println(this);
         return newNode;
     }
 
@@ -120,6 +123,8 @@ public class Undirected_Graph {
     }
 
     public void UnzipCycles() {
+//        System.out.println("before UnZip");
+//        System.out.println(this);
         List<Integer> order = new LinkedList<>();
         for(int k : Cycles.keySet()){
             order.add(k);
@@ -128,6 +133,7 @@ public class Undirected_Graph {
         for(int i = order.size()-1;i>=0;i--){
             int key = order.get(i);//18
             List<NodeData> cycle = Cycles.get(key);
+//            System.out.println("unzip "+key+"\ncyc= "+cycle.toString());
             for (NodeData node_in_cycle : cycle) {//go over all the nodes that in the cycle
                 for (NodeData ni : getNi(node_in_cycle)) {//go over all the edges of the current node
                     if (!cycle.contains(ni)) {
@@ -135,6 +141,9 @@ public class Undirected_Graph {
                             removeEdge(ni.getKey(), key);
                         }
                         EdgeData tmp = new EdgeData(ni, node_in_cycle);
+                        if(getEdge(node_in_cycle.getKey(), ni.getKey()).getMatched()){
+                            tmp.setMatched(true);
+                        }
                         edges.get(ni.getKey()).add(tmp);
                     }
                 }
@@ -142,6 +151,8 @@ public class Undirected_Graph {
             Cycles.remove(key);
             removeNode(key);
         }
+//        System.out.println("after UnZip");
+//        System.out.println(this);
     }
 
     private void resetVisit() {
@@ -209,6 +220,19 @@ public class Undirected_Graph {
         return n;
     }
 
+    public LinkedList<EdgeData> getAllEdgesCover() {
+        LinkedList<EdgeData> EdgesCover=new LinkedList<>();
+        for(NodeData n:vertices.values()){
+            for (EdgeData e: get_all_E(n.getKey())){
+                if(e.getEdgeCover()){
+                    if(!EdgesCover.contains(getEdge(e.getDest().getKey(), e.getSrc().getKey())))
+                        EdgesCover.add(e);
+                }
+            }
+        }
+        return EdgesCover;
+    }
+
 
     @Override
     public String toString() {
@@ -223,18 +247,30 @@ public class Undirected_Graph {
                 }
                 return s;
     }
-    public LinkedList<NodeData> allPath(int src, int dest){
+    public LinkedList<NodeData> FindAugmentingPath(int src, int dest){
         resetTagAndInfo();
         allSimplePaths = new LinkedList<>();
         currPath = new LinkedList<>();
         DFS(getNode(src),getNode(dest));
         for(LinkedList<NodeData> list : allSimplePaths){
             if(list.size()%2 == 0){
-                return list;
+                if(isAugmenting(list)){
+                    return list;
+                }
             }
         }
-
         return null;
+    }
+
+    public boolean isAugmenting(LinkedList<NodeData> path){
+        for (int i = 0; i < path.size() - 2; i++) {
+            EdgeData e1 = getEdge(path.get(i).getKey(), path.get(i + 1).getKey());
+            EdgeData e2 = getEdge(path.get(i + 1).getKey(), path.get(i+2).getKey());
+            if (e1.getMatched()==e2.getMatched()) {
+               return false;
+            }
+        }
+        return true;
     }
 
     private void DFS(NodeData src, NodeData dest) {
@@ -296,7 +332,7 @@ public class Undirected_Graph {
             for(EdgeData e: get_all_E(n.getKey())){
                 if(!e.getMatched()) {
                     if (!e.getEdgeCover()) {
-                        System.out.println("remove ("+e.getSrc()+", "+e.getDest()+")");
+//                        System.out.println("remove ("+e.getSrc()+", "+e.getDest()+")");
                         UnCovered.add(e);
                     }
                 }

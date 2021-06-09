@@ -2,11 +2,13 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.List;
 
 public class Algorithms {
 
@@ -126,18 +128,19 @@ public class Algorithms {
     }
 
 
-    public static void EdmondBlossom(Undirected_Graph g, JFrame f){
+    public static void EdmondBlossom(Undirected_Graph g, JFrame f) throws InterruptedException {
         LinkedList<NodeData> F =new LinkedList<>();
         F.addAll(g.get_all_V());
         //TODO - delete
         Collections.sort(F);
-        while (!F.isEmpty()){
+        while (F.size()>1){
             NodeData root=F.pop();
             Undirected_Graph T=new Undirected_Graph();
             T.addNode(root);
             Queue<NodeData> q=new LinkedList<>();
             q.add(root);
             while (!q.isEmpty()){
+
                 NodeData v=q.poll();
                 for(NodeData nei: g.getNi(v)){
                     if(T.getNode(nei.getKey())==null && nei.getMatch()){
@@ -151,15 +154,13 @@ public class Algorithms {
                     else if(T.getNode(nei.getKey())!=null && T.getEdge(v.getKey(), nei.getKey()) == null){
                         T.addEdge(v.getKey(), nei.getKey());
                         LinkedList<NodeData> cyc =T.checkCycle();
-                        if(cyc.size()%2==1) {//even cyc
+                        if(cyc.size()%2==0) {//even cyc
                             T.removeEdge(v.getKey(), nei.getKey());
                         }else{//odd cyc
                             NodeData SuperNodeForG = new NodeData();
                             NodeData SuperNodeForT= new NodeData(SuperNodeForG.getKey());
-                            //TODO - same node? or diff?
                             g.zipCycle(SuperNodeForG, cyc);
                             T.zipCycle(SuperNodeForT, cyc);
-                            //TODO- change the remove
                             q.removeAll(cyc);
                             q.add(SuperNodeForG);
                             break;
@@ -169,9 +170,9 @@ public class Algorithms {
                         T.addNode(nei);
                         T.addEdge(v.getKey(), nei.getKey());
                         g.UnzipCycles();
-                        T.UnzipCycles();
-                        SetAugmentingPath(g, T.allPath(root.getKey(), nei.getKey()));
+                        SetAugmentingPath(g, g.FindAugmentingPath(root.getKey(), nei.getKey()));
                         f.repaint();
+                        Thread.sleep(500);
                         F.remove(nei);
                         q.clear();
                         break;
@@ -180,105 +181,72 @@ public class Algorithms {
             }
 
         }
+        g.UnzipCycles();
+        System.out.println(g);
     }
 
 
-//        public static void MinimumEdgeCover(Undirected_Graph g, JFrame f) throws InterruptedException {
-//        EdmondBlossom(g,f);
-//        LinkedList<NodeData> unMatched =g.getUnMatchedNodes();
-//        for(NodeData n: unMatched){
-//            for(NodeData nei: g.getNi(n)){
-//                if(nei.getMatch()){
-//                    g.getEdge(n.getKey(), nei.getKey()).setEdgeCover(true);
-//                    g.getEdge(nei.getKey(), n.getKey()).setEdgeCover(true);
-//                    f.repaint();
-//                    Thread.sleep(500);
-//                    System.out.println();
-//                    break;
-//                }
-//            }
-//        }
-//    }
-    public static void runAllGraphs(){
+    public static void MinimumEdgeCover(Undirected_Graph g) throws InterruptedException {
+
         JFrame f =new JFrame();
-        int i = 1;
+        setFrame(g, f, true);
 
-        Undirected_Graph AnotherLargeGraph = new Undirected_Graph();
-        load(AnotherLargeGraph, "Graphs/Another large graph.json");
-        EdmondBlossom(AnotherLargeGraph, f);
-        System.out.println("Graph #"+(i++)+": Another large graph");
-        System.out.println("Nodes: \n"+AnotherLargeGraph.getAllMatchedNodes().toString());
-        System.out.println("Edges: \n"+AnotherLargeGraph.getAllMatchedEdges().toString());
-        System.out.println("\n*********************************************\n");
+        EdmondBlossom(g,f);
+        System.out.println(g);
 
-        f =new JFrame();
-        Undirected_Graph HouseOfCards = new Undirected_Graph();
-        load(HouseOfCards, "Graphs/House of cards.json");
-        EdmondBlossom(HouseOfCards, f);
-        System.out.println("Graph #"+(i++)+": House of cards");
-        System.out.println("Nodes: \n"+HouseOfCards.getAllMatchedNodes().toString());
-        System.out.println("Edges: \n"+HouseOfCards.getAllMatchedEdges().toString());
-        System.out.println("\n*********************************************\n");
-
-        f =new JFrame();
-        Undirected_Graph LargeGraph = new Undirected_Graph();
-        load(LargeGraph, "Graphs/Large graph.json");
-        EdmondBlossom(LargeGraph, f);
-        System.out.println("Graph #"+(i++)+": Large graph");
-        System.out.println("Nodes: \n"+LargeGraph.getAllMatchedNodes().toString());
-        System.out.println("Edges: \n"+LargeGraph.getAllMatchedEdges().toString());
-        System.out.println("\n*********************************************\n");
-
-        f =new JFrame();
-        Undirected_Graph LargeHouseofCards = new Undirected_Graph();
-        load(LargeHouseofCards, "Graphs/Large house of cards.json");
-        EdmondBlossom(LargeHouseofCards, f);
-        System.out.println("Graph #"+(i++)+": Large house of cards");
-        System.out.println("Nodes: \n"+LargeHouseofCards.getAllMatchedNodes().toString());
-        System.out.println("Edges: \n"+LargeHouseofCards.getAllMatchedEdges().toString());
-        System.out.println("\n*********************************************\n");
-
-        f =new JFrame();
-        Undirected_Graph Pentagon = new Undirected_Graph();
-        load(Pentagon, "Graphs/Pentagon.json");
-        EdmondBlossom(Pentagon, f);
-        System.out.println("Graph #"+(i++)+": Pentagon");
-        System.out.println("Nodes: \n"+Pentagon.getAllMatchedNodes().toString());
-        System.out.println("Edges: \n"+Pentagon.getAllMatchedEdges().toString());
-        System.out.println("\n*********************************************\n");
-
-        f =new JFrame();
-        Undirected_Graph Triangle = new Undirected_Graph();
-        load(Triangle, "Graphs/Triangle.json");
-        EdmondBlossom(Triangle, f);
-        System.out.println("Graph #"+(i++)+": Triangle");
-        System.out.println("Nodes: \n"+Triangle.getAllMatchedNodes().toString());
-        System.out.println("Edges: \n"+Triangle.getAllMatchedEdges().toString());
-        System.out.println("\n*********************************************\n");
-        f =new JFrame();
-        Undirected_Graph TrianglesAndSquares = new Undirected_Graph();
-        load(TrianglesAndSquares, "Graphs/Triangles and squares.json");
-        EdmondBlossom(TrianglesAndSquares, f);
-        System.out.println("Graph #"+(i++)+": Triangles and squares");
-        System.out.println("Nodes: \n"+TrianglesAndSquares.getAllMatchedNodes().toString());
-        System.out.println("Edges: \n"+TrianglesAndSquares.getAllMatchedEdges().toString());
+        LinkedList<NodeData> unMatched =g.getUnMatchedNodes();
+        for(NodeData n: unMatched){
+            for(NodeData nei: g.getNi(n)){
+                if(nei.getMatch()){
+                    g.getEdge(n.getKey(), nei.getKey()).setEdgeCover(true);
+                    g.getEdge(nei.getKey(), n.getKey()).setEdgeCover(true);
+                    f.repaint();
+                    Thread.sleep(500);
+                    break;
+                }
+            }
+        }
+        LinkedList<EdgeData> Edge_cover =new LinkedList<>();
+        Edge_cover.addAll(g.getAllEdgesCover());
+        Edge_cover.addAll(g.getAllMatchedEdges());
+        System.out.println("Edges in Edge cover:\n"+ Edge_cover.toString());
+    }
+    public static void setFrame(Undirected_Graph g, JFrame f, boolean b){
+        int w=1100;
+        NodeData n=g.get_all_V().stream().findFirst().get();
+        if(n.getP().getX()==0 && n.getP().getY()==0){
+            w=800;
+        }
+        f.setSize(w,600);
+        GUI gui=new GUI(g);
+        if(b){
+            gui.setEdgeCover(true);
+        }
+        f.add(gui);
+        f.setVisible(true);
+        f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
     }
 
-    public static void main(String[] args) {
-       runAllGraphs();
-//       load(g, "Graphs/Triangles and squares.json");
-//        JFrame f =new JFrame();
-////        f.setSize(1100,600);
-////        GUI gui=new GUI(g);
-////        f.add(gui);
-//////        f.setVisible(true);
-////        f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-//        EdmondBlossom(g, f);
-//        System.out.println("Triangles and squares:");
-//        System.out.println("Nodes: \n"+g.getAllMatchedNodes().toString());
-//        System.out.println("Edges: \n"+g.getAllMatchedEdges().toString());
+    public static void TestEdmondBlossom(Undirected_Graph g) throws InterruptedException {
+        JFrame f =new JFrame();
+        setFrame(g, f, false);
 
-//        f.repaint();
+        EdmondBlossom(g, f);
+
+        f.repaint();
+
+        System.out.println("Nodes: \n"+g.getAllMatchedNodes().toString());
+        System.out.println("Edges: \n"+g.getAllMatchedEdges().toString());
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+       Undirected_Graph g=new Undirected_Graph();
+//       load(g, "Graphs/Triangles and squares2.json");
+//       load(g, "Graphs/PentagonsEdgeCover.json");
+        load(g, "Graphs/Large house of cards.json");
+        MinimumEdgeCover(g);
+//      TestEdmondBlossom(g);
+
 
 
 
