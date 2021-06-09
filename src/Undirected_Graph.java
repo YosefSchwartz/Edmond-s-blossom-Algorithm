@@ -138,17 +138,16 @@ public class Undirected_Graph {
     }
 
     public void UnzipCycles() {
-//        System.out.println("before UnZip");
-//        System.out.println(this);
-        List<Integer> order = new LinkedList<>();
-        for(int k : Cycles.keySet()){
-            order.add(k);
-        }
+        System.out.println("before UnZip");
+        System.out.println(this);
+        List<Integer> cycleKeys = new LinkedList<>();
+        cycleKeys.addAll(Cycles.keySet());
+        Collections.sort(cycleKeys);
 
-        for(int i = order.size()-1;i>=0;i--){
-            int key = order.get(i);//18
+        for(int i = cycleKeys.size()-1;i>=0;i--){
+            int key = cycleKeys.get(i);
             List<NodeData> cycle = Cycles.get(key);
-//            System.out.println("unzip "+key+"\ncyc= "+cycle.toString());
+            System.out.println("unzip "+key+"\ncyc= "+cycle.toString());
             for (NodeData node_in_cycle : cycle) {//go over all the nodes that in the cycle
                 for (NodeData ni : getNi(node_in_cycle)) {//go over all the edges of the current node
                     if (!cycle.contains(ni)) {
@@ -163,8 +162,8 @@ public class Undirected_Graph {
                     }
                 }
             }
-            System.out.println("key to remove: "+key);
-            System.out.println(this);
+//            System.out.println("key to remove: "+key);
+//            System.out.println(this);
             Cycles.remove(key);
             removeNode(key);
         }
@@ -215,7 +214,7 @@ public class Undirected_Graph {
 
     public Collection<NodeData> getNi(NodeData n) {
         Collection<NodeData> res = new HashSet<>();
-//        System.out.println("Node= "+n.getKey());
+        System.out.println("Node= "+n.getKey());
 //        System.out.println(this);
         for (EdgeData e : this.get_all_E(n.getKey())) {
             res.add(e.getDest());

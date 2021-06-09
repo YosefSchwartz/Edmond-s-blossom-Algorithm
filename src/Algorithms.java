@@ -134,10 +134,10 @@ public class Algorithms {
         //TODO - delete
         Collections.sort(F);
         while (F.size()>1){
-            counter++;
-            if(counter>5){
-                System.out.println("***");
-            }
+//            counter++;
+//            if(counter>5){
+//                System.out.println("***");
+//            }
             NodeData root=F.pop();
             Undirected_Graph T=new Undirected_Graph();
             T.addNode(root);
@@ -176,7 +176,7 @@ public class Algorithms {
                         g.UnzipCycles();
                         SetAugmentingPath(g, g.FindAugmentingPath(root.getKey(), nei.getKey()));
                         f.repaint();
-                        Thread.sleep(500);
+//                        Thread.sleep(500);
                         F.remove(nei);
                         q.clear();
                         break;
@@ -186,7 +186,7 @@ public class Algorithms {
 
         }
         g.UnzipCycles();
-        System.out.println(g);
+//        System.out.println(g);
     }
 
 
@@ -242,18 +242,88 @@ public class Algorithms {
         System.out.println("Nodes: \n"+g.getAllMatchedNodes().toString());
         System.out.println("Edges: \n"+g.getAllMatchedEdges().toString());
     }
+    public static void runAllGraphs() throws InterruptedException {
+        JFrame f =new JFrame();
+        int i = 1;
 
+        Undirected_Graph AnotherLargeGraph = new Undirected_Graph();
+        load(AnotherLargeGraph, "Graphs/Another large graph.json");
+        EdmondBlossom(AnotherLargeGraph, f);
+        System.out.println("Graph #"+(i++)+": Another large graph");
+        System.out.println("Nodes: \n"+AnotherLargeGraph.getAllMatchedNodes().toString());
+        System.out.println("Edges: \n"+AnotherLargeGraph.getAllMatchedEdges().toString());
+        System.out.println("\n*********************************************\n");
+
+        f =new JFrame();
+        Undirected_Graph HouseOfCards = new Undirected_Graph();
+        load(HouseOfCards, "Graphs/House of cards.json");
+        EdmondBlossom(HouseOfCards, f);
+        System.out.println("Graph #"+(i++)+": House of cards");
+        System.out.println("Nodes: \n"+HouseOfCards.getAllMatchedNodes().toString());
+        System.out.println("Edges: \n"+HouseOfCards.getAllMatchedEdges().toString());
+        System.out.println("\n*********************************************\n");
+
+        f =new JFrame();
+        Undirected_Graph LargeGraph = new Undirected_Graph();
+        load(LargeGraph, "Graphs/Large graph.json");
+        EdmondBlossom(LargeGraph, f);
+        System.out.println("Graph #"+(i++)+": Large graph");
+        System.out.println("Nodes: \n"+LargeGraph.getAllMatchedNodes().toString());
+        System.out.println("Edges: \n"+LargeGraph.getAllMatchedEdges().toString());
+        System.out.println("\n*********************************************\n");
+
+        f =new JFrame();
+        Undirected_Graph LargeHouseofCards = new Undirected_Graph();
+        load(LargeHouseofCards, "Graphs/Large house of cards.json");
+        EdmondBlossom(LargeHouseofCards, f);
+        System.out.println("Graph #"+(i++)+": Large house of cards");
+        System.out.println("Nodes: \n"+LargeHouseofCards.getAllMatchedNodes().toString());
+        System.out.println("Edges: \n"+LargeHouseofCards.getAllMatchedEdges().toString());
+        System.out.println("\n*********************************************\n");
+
+        f =new JFrame();
+        Undirected_Graph Pentagon = new Undirected_Graph();
+        load(Pentagon, "Graphs/Pentagon.json");
+        EdmondBlossom(Pentagon, f);
+        System.out.println("Graph #"+(i++)+": Pentagon");
+        System.out.println("Nodes: \n"+Pentagon.getAllMatchedNodes().toString());
+        System.out.println("Edges: \n"+Pentagon.getAllMatchedEdges().toString());
+        System.out.println("\n*********************************************\n");
+
+        f =new JFrame();
+        Undirected_Graph Triangle = new Undirected_Graph();
+        load(Triangle, "Graphs/Triangle.json");
+        EdmondBlossom(Triangle, f);
+        System.out.println("Graph #"+(i++)+": Triangle");
+        System.out.println("Nodes: \n"+Triangle.getAllMatchedNodes().toString());
+        System.out.println("Edges: \n"+Triangle.getAllMatchedEdges().toString());
+        System.out.println("\n*********************************************\n");
+        f =new JFrame();
+        Undirected_Graph TrianglesAndSquares = new Undirected_Graph();
+        load(TrianglesAndSquares, "Graphs/Triangles and squares.json");
+        EdmondBlossom(TrianglesAndSquares, f);
+        System.out.println("Graph #"+(i++)+": Triangles and squares");
+        System.out.println("Nodes: \n"+TrianglesAndSquares.getAllMatchedNodes().toString());
+        System.out.println("Edges: \n"+TrianglesAndSquares.getAllMatchedEdges().toString());
+    }
     public static void main(String[] args) throws InterruptedException {
-       Undirected_Graph g=new Undirected_Graph();
-//       load(g, "Graphs/Triangles and squares2.json");
+
 //       load(g, "Graphs/PentagonsEdgeCover.json");
-        load(g, "Graphs/Large house of cards.json");
+//        load(g, "Graphs/Large house of cards.json");
 //        MinimumEdgeCover(g);
-        TestEdmondBlossom(g);
+//        for(int i=0; i<15; i++) {
+//            Undirected_Graph g=new Undirected_Graph();
+//            load(g, "Graphs/Triangles and squares2.json");
+//            System.out.println("i="+i);
+//            TestEdmondBlossom(g);
+//        }
+        for (int i=0; i<20; i++) {
+            System.out.println("i="+i);
+            runAllGraphs();
+
+        }
 
         System.out.println("finish");
-
-
 
 
 
