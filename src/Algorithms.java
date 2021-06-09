@@ -2,7 +2,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.File;
 import java.io.PrintWriter;
 import java.nio.file.Files;
@@ -243,7 +242,7 @@ public class Algorithms {
        Undirected_Graph g=new Undirected_Graph();
 //       load(g, "Graphs/Triangles and squares2.json");
 //       load(g, "Graphs/PentagonsEdgeCover.json");
-        load(g, "Graphs/Large house of cards.json");
+        load(g, "Graphs/Triangles and squares2.json");
         MinimumEdgeCover(g);
 //      TestEdmondBlossom(g);
 
