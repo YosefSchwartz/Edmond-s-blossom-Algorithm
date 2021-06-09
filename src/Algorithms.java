@@ -33,6 +33,10 @@ public class Algorithms {
                 JSONObject node = new JSONObject();
                 //Insert the data to this object
                 node.put("id", n.getKey());
+                JSONObject point = new JSONObject();
+                point.put("X",n.getP().getX());
+                point.put("Y",n.getP().getY());
+                node.put("point",point);
                 //Insert this object to nodes array
                 nodes.put(node);
             }
@@ -69,6 +73,14 @@ public class Algorithms {
                 JSONObject nJSON = nodes.getJSONObject(i);
                 //Build node that contain the id an pos
                 NodeData n = new NodeData(nJSON.getInt("id"));
+                try {
+                    JSONObject pointJSON = nJSON.getJSONObject("point");
+                    int x = pointJSON.getInt("X");
+                    int y = pointJSON.getInt("Y");
+                    n.setP(x,y);
+                }catch(Exception e){
+
+                }
                 //Add this node to the graph
                 g.addNode(n);
             }
@@ -198,9 +210,10 @@ public class Algorithms {
        Undirected_Graph g=new Undirected_Graph();
        load(g, "Graphs/Triangles and squares.json");
 //        System.out.println(g);
-        EdmondBlossom(g);
-        System.out.println("Nodes: \n"+g.getAllMatchedNodes().toString());
-        System.out.println("Edges: \n"+g.getAllMatchedEdges().toString());
-
+//        EdmondBlossom(g);
+//        System.out.println("Nodes: \n"+g.getAllMatchedNodes().toString());
+//        System.out.println("Edges: \n"+g.getAllMatchedEdges().toString());
+        save(g,"Graphs/Triangles and squares2.json");
+//
     }
 }
