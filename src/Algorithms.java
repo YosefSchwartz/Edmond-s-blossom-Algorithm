@@ -167,8 +167,8 @@ public class Algorithms {
                         }
                     }
                     else if(F.contains(nei)){
-                        T.addNode(nei);
-                        T.addEdge(v.getKey(), nei.getKey());
+//                        T.addNode(nei);
+//                        T.addEdge(v.getKey(), nei.getKey());
                         g.UnzipCycles();
                         SetAugmentingPath(g, g.FindAugmentingPath(root.getKey(), nei.getKey()));
                         f.repaint();

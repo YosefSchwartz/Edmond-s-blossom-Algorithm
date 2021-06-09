@@ -35,13 +35,13 @@ public class Undirected_Graph {
     }
 
     public void addEdge(int n1, int n2) {
-        if(getEdge(n1,n2) == null){
-            EdgeData e1 = new EdgeData(getNode(n1), getNode(n2));
-            EdgeData e2 = new EdgeData(getNode(n2), getNode(n1));
-            edges.get(n1).add(e1);
-            edges.get(n2).add(e2);
-            num_of_edges++;
-        }
+        if(getEdge(n1,n2) != null || n1==n2){return;}
+        EdgeData e1 = new EdgeData(getNode(n1), getNode(n2));
+        EdgeData e2 = new EdgeData(getNode(n2), getNode(n1));
+        edges.get(n1).add(e1);
+        edges.get(n2).add(e2);
+        num_of_edges++;
+
     }
 
     public void removeEdge(int n1, int n2) {
@@ -88,23 +88,38 @@ public class Undirected_Graph {
     }
 
     public NodeData zipCycle(NodeData newNode,LinkedList<NodeData> cycle) {
+//        System.out.println("****************************");
 //        System.out.println("zip cyc-> "+cycle.toString()+"\nthe superNode is "+newNode.getKey());
 //        System.out.println("before Zip");
 //        System.out.println(this);
+        LinkedList<Integer> cycleKeys=new LinkedList<>();
+        for(NodeData n: cycle){
+            cycleKeys.add(n.getKey());
+        }
         addNode(newNode);
         setPointForSuperNode(newNode,cycle);
         int key = newNode.getKey();
         for (NodeData node_in_cyc : cycle) {//go over all the nodes that in the cycle
+//            System.out.println("############ Node in cyc->"+node_in_cyc.getKey());
             for(EdgeData e: get_all_E(node_in_cyc.getKey())){
-                if(cycle.contains(e.getDest())){ continue; }
+//                System.out.println("CHECKING EDGE ("+node_in_cyc.getKey()+","+e.getDest().getKey()+")");
+                if(cycleKeys.contains(e.getDest().getKey())){
+//                    System.out.println("ignore this edge");
+                    continue;
+                }
                 int ni= e.getDest().getKey();
                 addEdge(key, ni);
+//                System.out.println("connect "+key+" & "+ni);
                 edges.get(ni).remove(getEdge(ni, node_in_cyc.getKey()));
+//                System.out.println("remove "+ni+"->"+node_in_cyc.getKey());
+
             }
         }
         Cycles.put(newNode.getKey(), cycle);
 //        System.out.println("after Zip");
 //        System.out.println(this);
+//        System.out.println("========================================");
+
         return newNode;
     }
 
@@ -148,6 +163,8 @@ public class Undirected_Graph {
                     }
                 }
             }
+            System.out.println("key to remove: "+key);
+            System.out.println(this);
             Cycles.remove(key);
             removeNode(key);
         }
@@ -198,6 +215,8 @@ public class Undirected_Graph {
 
     public Collection<NodeData> getNi(NodeData n) {
         Collection<NodeData> res = new HashSet<>();
+        System.out.println("Node= "+n.getKey());
+        System.out.println(this);
         for (EdgeData e : this.get_all_E(n.getKey())) {
             res.add(e.getDest());
         }
