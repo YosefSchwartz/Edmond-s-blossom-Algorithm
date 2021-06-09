@@ -10,33 +10,34 @@ public class GUI extends JPanel {
     private int r = 4 * SIZE / 5;
     private int n;
     private Undirected_Graph graph;
-    private int numberOfColors;
-    private Color Colors[];
-    JButton button;
     boolean flag;
-    int maxDeg;
+    boolean EdgeCover;
+
 
     public GUI(Undirected_Graph gr) {
         super(true);
-        this.setPreferredSize(new Dimension(SIZE, SIZE));
         n=gr.get_all_V().size();
-        graph=gr;
-        Colors=new Color[numberOfColors+1];
-        Colors[0]=Color.white;
-        Random generator = new Random(8);
-        for(int i=1; i<=numberOfColors; i++){
-            int r=(int)(generator.nextDouble() * (255));
-            int g=(int)(generator.nextDouble() * (255));
-            int b=(int)(generator.nextDouble() * (255));
-            Colors[i]=new Color(r,g,b);
+        NodeData n=gr.get_all_V().stream().findFirst().get();
+        this.setPreferredSize(new Dimension(SIZE, SIZE));
+
+        if(n.getP().getX()!=0 && n.getP().getY()!=0){
+            flag=true;
+        }else {
+            flag=false;
         }
+        graph=gr;
+        EdgeCover=false;
+
+    }
+
+    public void setEdgeCover(boolean b){
+        EdgeCover=b;
     }
 
 
     @Override
     public void paint(Graphics g) {
         super.paintComponent(g);
-
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(
                 RenderingHints.KEY_ANTIALIASING,
@@ -49,17 +50,33 @@ public class GUI extends JPanel {
         int r2 = Math.abs(m - r) / 2 ;
 //        g2d.drawOval(a - r, b - r, 2 * r, 2 * r);
 
-        g2d.setStroke(new BasicStroke(2));
-
+        drawDetails(g2d);
         if(flag){
             drawEdges(g2d);
+            g2d.setStroke(new BasicStroke(3));
             drawNodesWithLocations(g2d);
-
         }else {
+            g2d.setStroke(new BasicStroke(3));
             drawNodes(g2d, r2, m, r);
             drawEdges(g2d);
         }
+    }
 
+    private void drawDetails(Graphics2D g) {
+        Font f=new Font("SansSerif", Font.BOLD, 18);
+        g.setFont(f);
+        g.setColor(Color.black);
+        if(EdgeCover) {
+            int size=graph.getAllEdgesCover().size()+graph.getAllMatchedEdges().size();
+            g.drawString("τ(G): "+size, 100, 20);
+        }
+        g.drawString("α(G): "+graph.getAllMatchedEdges().size(), 100, 50);
+        g.drawString("ν(G): "+graph.get_all_V().size(), 100, 80);
+        if(+graph.getAllMatchedEdges().size()*2==graph.get_all_V().size()){
+            f=new Font("SansSerif", Font.BOLD, 22);
+            g.setFont(f);
+            g.drawString("Perfect match!", 100, 110);
+        }
     }
 
     private void drawEdges(Graphics2D g2d) {
@@ -69,6 +86,23 @@ public class GUI extends JPanel {
                         y1=node.getP().getY(),
                         x2=ni.getP().getX(),
                         y2=ni.getP().getY();
+                EdgeData e=graph.getEdge(node.getKey(), ni.getKey());
+                if(e==null){
+                    System.out.println("("+node.getKey()+","+ni.getKey()+")");
+                    System.out.println(graph);
+                }
+                if(e.getMatched()){
+                    g2d.setStroke(new BasicStroke(4));
+                    g2d.setColor(new Color(201,62,7));
+                }
+                else if(e.getEdgeCover()){
+                    g2d.setStroke(new BasicStroke(4));
+                    g2d.setColor(new Color(0,79,139));
+                }
+                else {
+                    g2d.setStroke(new BasicStroke(2));
+                    g2d.setColor(Color.black);
+                }
                 g2d.drawLine(x1, y1, x2, y2);
             }
         }
@@ -77,12 +111,17 @@ public class GUI extends JPanel {
         for(NodeData node: graph.get_all_V()){
             int x = node.getP().getX();
             int y =  node.getP().getY();
+            g2d.setColor(Color.white);
             g2d.fillOval(x-20, y-20, 40, 40);
             g2d.setColor(Color.BLACK);
+            if(node.getMatch()){
+                g2d.setColor(new Color(201,62,7));
+            }
             g2d.drawOval(x-20 , y-20, 40, 40);
             Font f=new Font("SansSerif", Font.BOLD,15);
             g2d.setFont(f);
             int key=node.getKey();
+            g2d.setColor(Color.black);
             g2d.drawString(""+key,x-6 ,y+5);
         }
     }
@@ -102,11 +141,17 @@ public class GUI extends JPanel {
             px=(m*r2+x*k)/(d);
             py=(m*r2+y*k)/(d);
             node.setP(px, py);
-            g2d.setColor(Color.BLACK);
+            g2d.setColor(Color.white);
+            g2d.fillOval(x - r2, y - r2, 2 * r2, 2 * r2);
+            g2d.setColor(Color.black);
+            if(node.getMatch()){
+                g2d.setColor(new Color(201,62,7));
+            }
             g2d.drawOval(x - r2, y - r2, 2 * r2, 2 * r2);
             Font f=new Font("SansSerif", Font.BOLD,13);
             g2d.setFont(f);
             int key=node.getKey();
+            g2d.setColor(Color.BLACK);
             g2d.drawString(""+key,(int)(x+0.038*(2 * r2)) , (int)(y+0.038*(2 * r2)));
             i++;
         }
