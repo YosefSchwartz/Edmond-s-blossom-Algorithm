@@ -10,6 +10,7 @@ import java.util.*;
 import java.util.List;
 
 public class Algorithms {
+    static int counter = 0;
 
     public static boolean save(Undirected_Graph g, String file) {
         //Create new Json object - graph
@@ -133,6 +134,10 @@ public class Algorithms {
         //TODO - delete
         Collections.sort(F);
         while (F.size()>1){
+            counter++;
+            if(counter>5){
+                System.out.println("***");
+            }
             NodeData root=F.pop();
             Undirected_Graph T=new Undirected_Graph();
             T.addNode(root);
@@ -242,9 +247,11 @@ public class Algorithms {
        Undirected_Graph g=new Undirected_Graph();
 //       load(g, "Graphs/Triangles and squares2.json");
 //       load(g, "Graphs/PentagonsEdgeCover.json");
-        load(g, "Graphs/Triangles and squares2.json");
-        MinimumEdgeCover(g);
-//      TestEdmondBlossom(g);
+        load(g, "Graphs/Large house of cards.json");
+//        MinimumEdgeCover(g);
+        TestEdmondBlossom(g);
+
+        System.out.println("finish");
 
 
 

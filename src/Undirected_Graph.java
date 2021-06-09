@@ -215,8 +215,8 @@ public class Undirected_Graph {
 
     public Collection<NodeData> getNi(NodeData n) {
         Collection<NodeData> res = new HashSet<>();
-        System.out.println("Node= "+n.getKey());
-        System.out.println(this);
+//        System.out.println("Node= "+n.getKey());
+//        System.out.println(this);
         for (EdgeData e : this.get_all_E(n.getKey())) {
             res.add(e.getDest());
         }
