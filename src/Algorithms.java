@@ -69,7 +69,7 @@ public class Algorithms {
                         List<NodeData> path = g.FindAugmentingPath(root.getKey(), nei.getKey());
                         g.setCurrAugmentingPath(path);
                         f.repaint();
-                        Thread.sleep(1000);
+                        Thread.sleep(1500);
                         SetAugmentingPath(g, path);
                         f.repaint();
                         Thread.sleep(1000);
