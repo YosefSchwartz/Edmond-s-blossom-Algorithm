@@ -1,3 +1,10 @@
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -252,19 +259,7 @@ public class Undirected_Graph {
     }
 
 
-    @Override
-    public String toString() {
-        String s = "Graph:\n";
-                for(int key : this.edges.keySet()){
-                    s+="key: "+key+" | ";
 
-                    for(EdgeData e : edges.get(key)){
-                        s+=""+e.getDest().getKey()+" ";
-                    }
-                    s+="\n";
-                }
-                return s;
-    }
     public LinkedList<NodeData> FindAugmentingPath(int src, int dest){
         resetTagAndInfo();
         allSimplePaths = new LinkedList<>();
@@ -359,5 +354,106 @@ public class Undirected_Graph {
         for(EdgeData e: UnCovered){
             removeEdge(e.getSrc().getKey(), e.getDest().getKey());
         }
+    }
+    public boolean load(String file) {
+        try {
+            //JSONObject that represent the graph from JSON file
+            JSONObject graph = new JSONObject(new String(Files.readAllBytes(Paths.get(file))));
+
+            //Two JSONArray that represents the Edges and Nodes
+            JSONArray edges = graph.getJSONArray("Edges");
+            JSONArray nodes = graph.getJSONArray("Nodes");
+
+            //Declare of the new graph
+//            g = new Graph();
+            //For each Node, get the data ,make new node and add him to the graph
+            for (int i = 0; i < nodes.length(); i++) {
+                JSONObject nJSON = nodes.getJSONObject(i);
+                //Build node that contain the id an pos
+                NodeData n = new NodeData(nJSON.getInt("id"));
+                try {
+                    JSONObject pointJSON = nJSON.getJSONObject("point");
+                    int x = pointJSON.getInt("X");
+                    int y = pointJSON.getInt("Y");
+                    n.setP(x,y);
+                }catch(Exception e){
+
+                }
+                //Add this node to the graph
+                addNode(n);
+            }
+            //For each edge, get the data and connect two vertex by the data
+            for (int i = 0; i < edges.length(); i++) {
+                JSONObject edge = edges.getJSONObject(i);
+                int src = edge.getInt("src");
+                int dest = edge.getInt("dest");
+                addEdge(src, dest);
+            }
+            return true;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+    public boolean save(String file) {
+        //Create new Json object - graph
+        JSONObject graph = new JSONObject();
+        //Declare two Json arrays
+        JSONArray edges = new JSONArray();
+        JSONArray nodes = new JSONArray();
+        try {
+            //For each node
+            for (NodeData n : get_all_V()) {
+                //Scan all his edges
+                for (EdgeData e : get_all_E(n.getKey())) {
+                    //Declare Json object - edge
+                    JSONObject edge = new JSONObject();
+                    //Insert the data to this object
+                    edge.put("src", e.getSrc());
+                    edge.put("dest", e.getDest());
+                    //Insert this object to edges array
+                    edges.put(edge);
+                }
+                //Declare Json object - node
+                JSONObject node = new JSONObject();
+                //Insert the data to this object
+                node.put("id", n.getKey());
+                JSONObject point = new JSONObject();
+                point.put("X",n.getP().getX());
+                point.put("Y",n.getP().getY());
+                node.put("point",point);
+                //Insert this object to nodes array
+                nodes.put(node);
+            }
+            //Insert this both arrays to the graph object
+            graph.put("Edges", edges);
+            graph.put("Nodes", nodes);
+
+            PrintWriter pw = new PrintWriter(new File(file));
+            pw.write(graph.toString());
+            pw.close();
+            return true;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public String toString() {
+        String s = "Graph:\n";
+        for(int key : this.edges.keySet()){
+            s+="key: "+key+" | ";
+
+            for(EdgeData e : edges.get(key)){
+                s+=""+e.getDest().getKey()+" ";
+            }
+            s+="\n";
+        }
+        return s;
     }
 }

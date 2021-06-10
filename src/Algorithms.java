@@ -10,98 +10,6 @@ import java.util.*;
 import java.util.List;
 
 public class Algorithms {
-    static int counter = 0;
-
-    public static boolean save(Undirected_Graph g, String file) {
-        //Create new Json object - graph
-        JSONObject graph = new JSONObject();
-        //Declare two Json arrays
-        JSONArray edges = new JSONArray();
-        JSONArray nodes = new JSONArray();
-        try {
-            //For each node
-            for (NodeData n : g.get_all_V()) {
-                //Scan all his edges
-                for (EdgeData e : g.get_all_E(n.getKey())) {
-                    //Declare Json object - edge
-                    JSONObject edge = new JSONObject();
-                    //Insert the data to this object
-                    edge.put("src", e.getSrc());
-                    edge.put("dest", e.getDest());
-                    //Insert this object to edges array
-                    edges.put(edge);
-                }
-                //Declare Json object - node
-                JSONObject node = new JSONObject();
-                //Insert the data to this object
-                node.put("id", n.getKey());
-                JSONObject point = new JSONObject();
-                point.put("X",n.getP().getX());
-                point.put("Y",n.getP().getY());
-                node.put("point",point);
-                //Insert this object to nodes array
-                nodes.put(node);
-            }
-            //Insert this both arrays to the graph object
-            graph.put("Edges", edges);
-            graph.put("Nodes", nodes);
-
-            PrintWriter pw = new PrintWriter(new File(file));
-            pw.write(graph.toString());
-            pw.close();
-            return true;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-
-
-    public static boolean load(Undirected_Graph g, String file) {
-        try {
-            //JSONObject that represent the graph from JSON file
-            JSONObject graph = new JSONObject(new String(Files.readAllBytes(Paths.get(file))));
-
-            //Two JSONArray that represents the Edges and Nodes
-            JSONArray edges = graph.getJSONArray("Edges");
-            JSONArray nodes = graph.getJSONArray("Nodes");
-
-            //Declare of the new graph
-//            g = new Graph();
-            //For each Node, get the data ,make new node and add him to the graph
-            for (int i = 0; i < nodes.length(); i++) {
-                JSONObject nJSON = nodes.getJSONObject(i);
-                //Build node that contain the id an pos
-                NodeData n = new NodeData(nJSON.getInt("id"));
-                try {
-                    JSONObject pointJSON = nJSON.getJSONObject("point");
-                    int x = pointJSON.getInt("X");
-                    int y = pointJSON.getInt("Y");
-                    n.setP(x,y);
-                }catch(Exception e){
-
-                }
-                //Add this node to the graph
-                g.addNode(n);
-            }
-            //For each edge, get the data and connect two vertex by the data
-            for (int i = 0; i < edges.length(); i++) {
-                JSONObject edge = edges.getJSONObject(i);
-                int src = edge.getInt("src");
-                int dest = edge.getInt("dest");
-                g.addEdge(src, dest);
-            }
-            return true;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-
 
     private static NodeData getMate(Undirected_Graph g, NodeData n2) {
         for (EdgeData e : g.get_all_E(n2.getKey())) {
@@ -134,10 +42,6 @@ public class Algorithms {
         //TODO - delete
         Collections.sort(F);
         while (F.size()>1){
-//            counter++;
-//            if(counter>5){
-//                System.out.println("***");
-//            }
             NodeData root=F.pop();
             Undirected_Graph T=new Undirected_Graph();
             T.addNode(root);
@@ -242,77 +146,14 @@ public class Algorithms {
         System.out.println("Nodes: \n"+g.getAllMatchedNodes().toString());
         System.out.println("Edges: \n"+g.getAllMatchedEdges().toString());
     }
-    public static void runAllGraphs() throws InterruptedException {
-        JFrame f =new JFrame();
-        int i = 1;
 
-        Undirected_Graph AnotherLargeGraph = new Undirected_Graph();
-        load(AnotherLargeGraph, "Graphs/g6.json");
-        EdmondBlossom(AnotherLargeGraph, f);
-        System.out.println("Graph #"+(i++)+": Another large graph");
-        System.out.println("Nodes: \n"+AnotherLargeGraph.getAllMatchedNodes().toString());
-        System.out.println("Edges: \n"+AnotherLargeGraph.getAllMatchedEdges().toString());
-        System.out.println("\n*********************************************\n");
-
-        f =new JFrame();
-        Undirected_Graph HouseOfCards = new Undirected_Graph();
-        load(HouseOfCards, "Graphs/g3.json");
-        EdmondBlossom(HouseOfCards, f);
-        System.out.println("Graph #"+(i++)+": House of cards");
-        System.out.println("Nodes: \n"+HouseOfCards.getAllMatchedNodes().toString());
-        System.out.println("Edges: \n"+HouseOfCards.getAllMatchedEdges().toString());
-        System.out.println("\n*********************************************\n");
-
-        f =new JFrame();
-        Undirected_Graph LargeGraph = new Undirected_Graph();
-        load(LargeGraph, "Graphs/g5.json");
-        EdmondBlossom(LargeGraph, f);
-        System.out.println("Graph #"+(i++)+": Large graph");
-        System.out.println("Nodes: \n"+LargeGraph.getAllMatchedNodes().toString());
-        System.out.println("Edges: \n"+LargeGraph.getAllMatchedEdges().toString());
-        System.out.println("\n*********************************************\n");
-
-        f =new JFrame();
-        Undirected_Graph LargeHouseofCards = new Undirected_Graph();
-        load(LargeHouseofCards, "Graphs/g4.json");
-        EdmondBlossom(LargeHouseofCards, f);
-        System.out.println("Graph #"+(i++)+": Large house of cards");
-        System.out.println("Nodes: \n"+LargeHouseofCards.getAllMatchedNodes().toString());
-        System.out.println("Edges: \n"+LargeHouseofCards.getAllMatchedEdges().toString());
-        System.out.println("\n*********************************************\n");
-
-        f =new JFrame();
-        Undirected_Graph Pentagon = new Undirected_Graph();
-        load(Pentagon, "Graphs/g2.json");
-        EdmondBlossom(Pentagon, f);
-        System.out.println("Graph #"+(i++)+": Pentagon");
-        System.out.println("Nodes: \n"+Pentagon.getAllMatchedNodes().toString());
-        System.out.println("Edges: \n"+Pentagon.getAllMatchedEdges().toString());
-        System.out.println("\n*********************************************\n");
-
-        f =new JFrame();
-        Undirected_Graph Triangle = new Undirected_Graph();
-        load(Triangle, "Graphs/g1.json");
-        EdmondBlossom(Triangle, f);
-        System.out.println("Graph #"+(i++)+": Triangle");
-        System.out.println("Nodes: \n"+Triangle.getAllMatchedNodes().toString());
-        System.out.println("Edges: \n"+Triangle.getAllMatchedEdges().toString());
-        System.out.println("\n*********************************************\n");
-        f =new JFrame();
-        Undirected_Graph TrianglesAndSquares = new Undirected_Graph();
-        load(TrianglesAndSquares, "Graphs/Triangles and squares.json");
-        EdmondBlossom(TrianglesAndSquares, f);
-        System.out.println("Graph #"+(i++)+": Triangles and squares");
-        System.out.println("Nodes: \n"+TrianglesAndSquares.getAllMatchedNodes().toString());
-        System.out.println("Edges: \n"+TrianglesAndSquares.getAllMatchedEdges().toString());
-    }
     public static void main(String[] args) throws InterruptedException {
         Undirected_Graph g = new Undirected_Graph();
 
-//       load(g, "Graphs/PentagonsWithOut20.json");
-//        load(g, "Graphs/Graphs_with_Points/Pentagons.json");
-//        load(g, "Graphs/Graphs_with_Points/PentagonsWithOut20.json");
-        load(g, "Graphs/Graphs_with_Points/Triangles and squares.json");
+//       g.load("Graphs/PentagonsWithOut20.json");
+//        g.load("Graphs/Graphs_with_Points/Pentagons.json");
+//        g.load("Graphs/Graphs_with_Points/PentagonsWithOut20.json");
+        g.load("Graphs/Graphs_with_Points/Triangles and squares.json");
         TestEdmondBlossom(g);
 //        MinimumEdgeCover(g);
 //        for(int i=0; i<15; i++) {
