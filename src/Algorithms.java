@@ -100,7 +100,6 @@ public class Algorithms {
         setFrame(g, f, true);
 
         EdmondBlossom(g,f);
-        System.out.println(g);
 
         LinkedList<NodeData> unMatched =g.getUnMatchedNodes();
         for(NodeData n: unMatched){
@@ -114,11 +113,18 @@ public class Algorithms {
                 }
             }
         }
+
         LinkedList<EdgeData> Edge_cover =new LinkedList<>();
         Edge_cover.addAll(g.getAllEdgesCover());
         Edge_cover.addAll(g.getAllMatchedEdges());
+
+//        g.clearUnCovered();
+//        f.repaint();
+
         System.out.println("Edges in Edge cover:\n"+ Edge_cover.toString());
     }
+
+
     public static void setFrame(Undirected_Graph g, JFrame f, boolean b){
         int w=1100;
         NodeData n=g.get_all_V().stream().findFirst().get();
@@ -141,7 +147,8 @@ public class Algorithms {
         Thread.sleep(1500);
         EdmondBlossom(g, f);
 
-        f.repaint();
+//        g.clearUnCovered();
+//        f.repaint();
 
         System.out.println("Nodes: \n"+g.getAllMatchedNodes().toString());
         System.out.println("Edges: \n"+g.getAllMatchedEdges().toString());
