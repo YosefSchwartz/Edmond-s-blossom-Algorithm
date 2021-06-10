@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
-import java.util.Random;
+import java.util.*;
+import java.util.List;
 
 public class GUI extends JPanel {
 
@@ -20,11 +21,7 @@ public class GUI extends JPanel {
         NodeData n=gr.get_all_V().stream().findFirst().get();
         this.setPreferredSize(new Dimension(SIZE, SIZE));
 
-        if(n.getP().getX()!=0 && n.getP().getY()!=0){
-            flag=true;
-        }else {
-            flag=false;
-        }
+        flag= n.getP().getX() != 0 && n.getP().getY() != 0;
         graph=gr;
         EdgeCover=false;
 
@@ -47,18 +44,33 @@ public class GUI extends JPanel {
         b = getHeight() / 2;
         int m = Math.min(a, b);
         r = 4 * m / 5;
-        int r2 = Math.abs(m - r) / 2 ;
-//        g2d.drawOval(a - r, b - r, 2 * r, 2 * r);
 
         drawDetails(g2d);
+        if(graph.getCurrAugmentingPath().size() > 0){
+            drawAugmentingPath(g2d);
+        }
         if(flag){
             drawEdges(g2d);
             g2d.setStroke(new BasicStroke(3));
             drawNodesWithLocations(g2d);
         }else {
             g2d.setStroke(new BasicStroke(3));
-            drawNodes(g2d, r2, m, r);
+            drawNodes(g2d, m, r);
             drawEdges(g2d);
+        }
+
+    }
+
+    private void drawAugmentingPath(Graphics2D g2d) {
+        g2d.setStroke(new BasicStroke(10));
+        g2d.setColor(new Color(150,150,150));
+        List<NodeData> path = graph.getCurrAugmentingPath();
+        for(int i = 0;i<path.size()-1;i++){
+            int x1=path.get(i).getP().getX(),
+                    y1=path.get(i).getP().getY(),
+                    x2=path.get(i+1).getP().getX(),
+                    y2=path.get(i+1).getP().getY();
+            g2d.drawLine(x1,y1,x2,y2);
         }
     }
 
@@ -75,7 +87,7 @@ public class GUI extends JPanel {
         if(+graph.getAllMatchedEdges().size()*2==graph.get_all_V().size()){
             f=new Font("SansSerif", Font.BOLD, 22);
             g.setFont(f);
-            g.drawString("Perfect match!", 100, 110);
+            g.drawString("Perfect match!", 25, 110);
         }
     }
 
@@ -126,8 +138,8 @@ public class GUI extends JPanel {
         }
     }
 
-    private void drawNodes(Graphics2D g2d, int r2, int m, int r) {
-        r2=20;
+    private void drawNodes(Graphics2D g2d, int m, int r) {
+        int r2=20;
         int i=0;
         for(NodeData node: graph.get_all_V()){
             double t = 2 * Math.PI * i / n;

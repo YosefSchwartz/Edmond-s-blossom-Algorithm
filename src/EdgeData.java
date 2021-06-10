@@ -1,5 +1,5 @@
 public class EdgeData {
-    private NodeData src, dest;
+    private final NodeData src, dest;
     private boolean matched;
     private boolean inEdgeCover;
 

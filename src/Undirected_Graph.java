@@ -1,17 +1,12 @@
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.w3c.dom.Node;
 
 import java.io.File;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-
-/**
- * Graph class implements graph interface, that displays a undirectional unweighted graph.
- * this class use a dynamic data structure, which allow to contain a large graph.
- * In addition contains the total actions performed, and the number of edges.
- */
 
 public class Undirected_Graph {
     private HashMap<Integer, NodeData> vertices;
@@ -20,6 +15,7 @@ public class Undirected_Graph {
     boolean flagForCycle = false;
     LinkedList<NodeData> currPath;
     List<LinkedList<NodeData>> allSimplePaths;
+    List<NodeData> currAugmentingPath;
 
     int num_of_edges, num_of_nodes;
 
@@ -27,6 +23,7 @@ public class Undirected_Graph {
         vertices = new HashMap<>();
         edges = new HashMap<>();
         Cycles = new HashMap<>();
+        currAugmentingPath = new LinkedList<>();
         num_of_edges = 0;
         num_of_nodes = 0;
     }
@@ -64,7 +61,7 @@ public class Undirected_Graph {
     public void removeNode(int key) {
         vertices.remove(key);
         for (EdgeData e : edges.get(key)) {
-            edges.get(e.getDest().getKey()).remove(e.getSrc());
+            edges.get(e.getDest().getKey()).remove(getEdge(e.getDest().getKey(),key));
             num_of_edges--;
         }
         edges.remove(key);
@@ -95,10 +92,6 @@ public class Undirected_Graph {
     }
 
     public NodeData zipCycle(NodeData newNode,LinkedList<NodeData> cycle) {
-//        System.out.println("****************************");
-//        System.out.println("zip cyc-> "+cycle.toString()+"\nthe superNode is "+newNode.getKey());
-//        System.out.println("before Zip");
-//        System.out.println(this);
         LinkedList<Integer> cycleKeys=new LinkedList<>();
         for(NodeData n: cycle){
             cycleKeys.add(n.getKey());
@@ -107,26 +100,19 @@ public class Undirected_Graph {
         setPointForSuperNode(newNode,cycle);
         int key = newNode.getKey();
         for (NodeData node_in_cyc : cycle) {//go over all the nodes that in the cycle
-//            System.out.println("############ Node in cyc->"+node_in_cyc.getKey());
             for(EdgeData e: get_all_E(node_in_cyc.getKey())){
-//                System.out.println("CHECKING EDGE ("+node_in_cyc.getKey()+","+e.getDest().getKey()+")");
                 if(cycleKeys.contains(e.getDest().getKey())){
-//                    System.out.println("ignore this edge");
                     continue;
                 }
                 int ni= e.getDest().getKey();
                 addEdge(key, ni);
-//                System.out.println("connect "+key+" & "+ni);
+                getEdge(key,ni).setMatched(e.getMatched());
+                getEdge(ni,key).setMatched(e.getMatched());
                 edges.get(ni).remove(getEdge(ni, node_in_cyc.getKey()));
-//                System.out.println("remove "+ni+"->"+node_in_cyc.getKey());
 
             }
         }
         Cycles.put(newNode.getKey(), cycle);
-//        System.out.println("after Zip");
-//        System.out.println(this);
-//        System.out.println("========================================");
-
         return newNode;
     }
 
@@ -145,37 +131,29 @@ public class Undirected_Graph {
     }
 
     public void UnzipCycles() {
-        System.out.println("before UnZip");
-        System.out.println(this);
-        List<Integer> cycleKeys = new LinkedList<>();
-        cycleKeys.addAll(Cycles.keySet());
+        List<Integer> cycleKeys = new LinkedList<>(Cycles.keySet());
         Collections.sort(cycleKeys);
 
-        for(int i = cycleKeys.size()-1;i>=0;i--){
+        for(int i = cycleKeys.size()-1;i>=0;i--) {
             int key = cycleKeys.get(i);
             List<NodeData> cycle = Cycles.get(key);
-            System.out.println("unzip "+key+"\ncyc= "+cycle.toString());
             for (NodeData node_in_cycle : cycle) {//go over all the nodes that in the cycle
                 for (NodeData ni : getNi(node_in_cycle)) {//go over all the edges of the current node
                     if (!cycle.contains(ni)) {
-                        if(edges.get(ni.getKey()).contains(getEdge(ni.getKey(), key))) {
+                        if (edges.get(ni.getKey()).contains(getEdge(ni.getKey(), key))) {
                             removeEdge(ni.getKey(), key);
                         }
                         EdgeData tmp = new EdgeData(ni, node_in_cycle);
-                        if(getEdge(node_in_cycle.getKey(), ni.getKey()).getMatched()){
+                        if (getEdge(node_in_cycle.getKey(), ni.getKey()).getMatched()) {
                             tmp.setMatched(true);
                         }
                         edges.get(ni.getKey()).add(tmp);
                     }
                 }
             }
-//            System.out.println("key to remove: "+key);
-//            System.out.println(this);
             Cycles.remove(key);
             removeNode(key);
         }
-//        System.out.println("after UnZip");
-//        System.out.println(this);
     }
 
     private void resetVisit() {
@@ -221,8 +199,6 @@ public class Undirected_Graph {
 
     public Collection<NodeData> getNi(NodeData n) {
         Collection<NodeData> res = new HashSet<>();
-        System.out.println("Node= "+n.getKey());
-//        System.out.println(this);
         for (EdgeData e : this.get_all_E(n.getKey())) {
             res.add(e.getDest());
         }
@@ -338,6 +314,10 @@ public class Undirected_Graph {
         return UnmatchedNodes;
     }
 
+    public void setCurrAugmentingPath(List<NodeData> path){
+        this.currAugmentingPath = path;
+    }
+
 
     public void clearUnCovered() {
         LinkedList<EdgeData> UnCovered=new LinkedList<>();
@@ -345,7 +325,6 @@ public class Undirected_Graph {
             for(EdgeData e: get_all_E(n.getKey())){
                 if(!e.getMatched()) {
                     if (!e.getEdgeCover()) {
-//                        System.out.println("remove ("+e.getSrc()+", "+e.getDest()+")");
                         UnCovered.add(e);
                     }
                 }
@@ -364,8 +343,6 @@ public class Undirected_Graph {
             JSONArray edges = graph.getJSONArray("Edges");
             JSONArray nodes = graph.getJSONArray("Nodes");
 
-            //Declare of the new graph
-//            g = new Graph();
             //For each Node, get the data ,make new node and add him to the graph
             for (int i = 0; i < nodes.length(); i++) {
                 JSONObject nJSON = nodes.getJSONObject(i);
@@ -445,15 +422,19 @@ public class Undirected_Graph {
 
     @Override
     public String toString() {
-        String s = "Graph:\n";
+        StringBuilder s = new StringBuilder("Graph:\n");
         for(int key : this.edges.keySet()){
-            s+="key: "+key+" | ";
+            s.append("key: ").append(key).append(" | ");
 
             for(EdgeData e : edges.get(key)){
-                s+=""+e.getDest().getKey()+" ";
+                s.append(e.getDest().getKey()).append(" ");
             }
-            s+="\n";
+            s.append("\n");
         }
-        return s;
+        return s.toString();
+    }
+
+    public List<NodeData> getCurrAugmentingPath() {
+        return currAugmentingPath;
     }
 }

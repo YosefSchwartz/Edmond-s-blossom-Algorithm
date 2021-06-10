@@ -1,11 +1,4 @@
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import javax.swing.*;
-import java.io.File;
-import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
 
@@ -37,9 +30,7 @@ public class Algorithms {
 
 
     public static void EdmondBlossom(Undirected_Graph g, JFrame f) throws InterruptedException {
-        LinkedList<NodeData> F =new LinkedList<>();
-        F.addAll(g.get_all_V());
-        //TODO - delete
+        LinkedList<NodeData> F =new LinkedList<>(g.get_all_V());
         Collections.sort(F);
         while (F.size()>1){
             NodeData root=F.pop();
@@ -48,7 +39,6 @@ public class Algorithms {
             Queue<NodeData> q=new LinkedList<>();
             q.add(root);
             while (!q.isEmpty()){
-
                 NodeData v=q.poll();
                 for(NodeData nei: g.getNi(v)){
                     if(T.getNode(nei.getKey())==null && nei.getMatch()){
@@ -62,9 +52,9 @@ public class Algorithms {
                     else if(T.getNode(nei.getKey())!=null && T.getEdge(v.getKey(), nei.getKey()) == null){
                         T.addEdge(v.getKey(), nei.getKey());
                         LinkedList<NodeData> cyc =T.checkCycle();
-                        if(cyc.size()%2==0) {//even cyc
+                        if(cyc.size()%2==0 ) { //even cyc
                             T.removeEdge(v.getKey(), nei.getKey());
-                        }else{//odd cyc
+                        }else{ //odd cyc
                             NodeData SuperNodeForG = new NodeData();
                             NodeData SuperNodeForT= new NodeData(SuperNodeForG.getKey());
                             g.zipCycle(SuperNodeForG, cyc);
@@ -75,10 +65,12 @@ public class Algorithms {
                         }
                     }
                     else if(F.contains(nei)){
-//                        T.addNode(nei);
-//                        T.addEdge(v.getKey(), nei.getKey());
                         g.UnzipCycles();
-                        SetAugmentingPath(g, g.FindAugmentingPath(root.getKey(), nei.getKey()));
+                        List<NodeData> path = g.FindAugmentingPath(root.getKey(), nei.getKey());
+                        g.setCurrAugmentingPath(path);
+                        f.repaint();
+                        Thread.sleep(1000);
+                        SetAugmentingPath(g, path);
                         f.repaint();
                         Thread.sleep(1000);
                         F.remove(nei);
@@ -87,15 +79,14 @@ public class Algorithms {
                     }
                 }
             }
-
         }
+        g.currAugmentingPath = new LinkedList<>();
         g.UnzipCycles();
-//        System.out.println(g);
+        f.repaint();
     }
 
 
     public static void MinimumEdgeCover(Undirected_Graph g) throws InterruptedException {
-
         JFrame f =new JFrame();
         setFrame(g, f, true);
 
@@ -142,6 +133,7 @@ public class Algorithms {
     }
 
     public static void TestEdmondBlossom(Undirected_Graph g) throws InterruptedException {
+
         JFrame f =new JFrame();
         setFrame(g, f, false);
         Thread.sleep(1500);
@@ -153,32 +145,61 @@ public class Algorithms {
         System.out.println("Nodes: \n"+g.getAllMatchedNodes().toString());
         System.out.println("Edges: \n"+g.getAllMatchedEdges().toString());
     }
+    public static Undirected_Graph graphCreator(int V, int E, boolean connected) throws Exception {
+        if(connected && E<(V-1)){throw new Exception("This graph cannot be connected!");}
 
-    public static void main(String[] args) throws InterruptedException {
+        if(E > V*(V-1)){ throw new Exception("This graph, with "+V+" nodes cannot have "+E+" edges");}
         Undirected_Graph g = new Undirected_Graph();
+        //Add nodes to the graph
+        for(int i = 0;i<V;++i){
+            g.addNode(new NodeData());
+        }
 
-//       g.load("Graphs/PentagonsWithOut20.json");
+        if(connected) {
+            List<NodeData> l = new LinkedList<>(g.get_all_V());
+            Random r = new Random();
+            for (NodeData n : g.get_all_V()) {
+                if (g.get_all_E(n.getKey()).size() == 0) {
+                    int dest = r.nextInt(l.size());
+                    dest = l.get(dest).getKey();
+                    g.addEdge(n.getKey(), dest);
+                    E--;
+                }
+            }
+        }
+
+        List<NodeData> nodes = new LinkedList<>(g.get_all_V());
+        Random r = new Random();
+        //Connect more random edges to the graph
+        while  (E>0) {
+            int src = r.nextInt(nodes.size());
+            int dest = r.nextInt(nodes.size());
+            while (src == dest) {
+                dest = r.nextInt(nodes.size());
+            }
+            if (g.getEdge(src, dest) == null) {
+                g.addEdge(src, dest);
+                E--;
+            }
+        }
+        return g;
+    }
+
+    public static void main(String[] args) throws Exception {
+        Undirected_Graph g = new Undirected_Graph();
+        /*
+        For edge cover we need connected graph.
+        so, if you want run Minimum Edge Cover, pass "true", else, "false".
+         */
+//        g = graphCreator(30,50,true);
+
+//       g.load("Graphs/Graphs_with_Points/PentagonsWithOut20.json");
 //        g.load("Graphs/Graphs_with_Points/Pentagons.json");
-//        g.load("Graphs/Graphs_with_Points/PentagonsWithOut20.json");
+//        g.load("Graphs/Graphs_with_Points/Vane.json");
         g.load("Graphs/Graphs_with_Points/Triangles and squares.json");
-        TestEdmondBlossom(g);
-//        MinimumEdgeCover(g);
-//        for(int i=0; i<15; i++) {
-//            Undirected_Graph g=new Undirected_Graph();
-//            load(g, "Graphs/Triangles and squares.json");
-//            System.out.println("i="+i);
-//            TestEdmondBlossom(g);
-//        }
-//        for (int i=0; i<20; i++) {
-//            System.out.println("i="+i);
-//            runAllGraphs();
-//
-//        }
 
-        System.out.println("finish");
-
-
-
+//        TestEdmondBlossom(g);
+        MinimumEdgeCover(g);
 
     }
 }
